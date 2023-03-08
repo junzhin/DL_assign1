@@ -29,6 +29,7 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 
 # Relevant Resources:
 
+- **Overleaf Report Editing Link:** https://www.overleaf.com/6912928632bvcjvsqvqwsw
 - **For complete list of references, please refer to the report** 
 
 ---
