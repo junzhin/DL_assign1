@@ -1,6 +1,6 @@
 
 ---
-# <img src="https://www.sydney.edu.au/etc.clientlibs/corporate-commons/clientlibs/foundation/resources/corporate-frontend/assets/img/USydLogo.svg" width=15% align=left>  # Deep Learning
+# <img src="https://www.sydney.edu.au/etc.clientlibs/corporate-commons/clientlibs/foundation/resources/corporate-frontend/assets/img/USydLogo.svg" width=15% align=left>  Deep Learning
 
 This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023, Assignment 1
 
