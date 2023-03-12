@@ -16,10 +16,10 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 ---
 ## Team info:
 
-| Name           | Unikey   |
-| -------------- | -------- |
-| Junzhi Ning    | jnin9950 |
-| Yuhan Li       | yuli6273 |
+| Name        | Unikey   |
+|-------------| -------- |
+| Junzhi Ning | jnin9950 |
+| Yuhao Li    | yuli6273 |
 
 ---
 # Experiment results
