@@ -13,7 +13,7 @@ class Activation(object):
         return 1.0 / (1.0 + np.exp(-x))
 
     def __logistic_deriv(self, a):
-        # a = logistic(x)
+    
         return a * (1 - a)
     
     def __relu(self,a):
@@ -21,7 +21,7 @@ class Activation(object):
   
     def __relu_deriv(self,a):
         return np.where(a <= 0, 0, 1)
-        # return np.heaviside(a, 0)
+ 
         
     def __leakyrelu(self,a):
         return np.maximum(self.delta * a, a)
@@ -34,7 +34,7 @@ class Activation(object):
         return np.exp(shift) / np.sum(np.exp(shift))
     
     def __softmax_deriv(self,a):
-        # outer product
+    
         s = self.__softmax(a)
         return np.outer(s, (1 - s))
         
@@ -56,8 +56,7 @@ class Activation(object):
         elif activation == "softmax":
             self.f = self.__softmax
             self.f_deriv = self.__softmax_deriv
-            
-            
+                 
 class HiddenLayer(object):
     def __init__(self, n_in, n_out,
                  activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0):
@@ -110,14 +109,6 @@ class HiddenLayer(object):
     # the forward and backward progress (in the hidden layer level) for each training epoch
     # please learn the week2 lec contents carefully to understand these codes.
     
-    def dropout_forward(self, input):
-        self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
-        input *= self.mask
-        return input
-    
-    def dropout_backward(self, delta, previous_masking):
-        return delta *  previous_masking
-        
     def forward(self, input, isTraining = True):
         '''
         :type input: numpy.array
@@ -132,6 +123,8 @@ class HiddenLayer(object):
         
         if isTraining and not self.output_layer:
             self.output = self.dropout_forward(self.output)
+        else:
+            self.mask = np.ones(input.shape)
             
         return self.output
     
@@ -144,8 +137,13 @@ class HiddenLayer(object):
             delta = self.dropout_backward(delta, mask) if mask is not None else delta
         return delta
     
+    def dropout_forward(self, input):
+        self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
+        input *= self.mask
+        return input
+    
+    def dropout_backward(self, delta, previous_masking):
+        return delta *  previous_masking
+    
     def getter_mask(self):
         return self.mask
-    
-    
-    
