@@ -18,3 +18,4 @@ X_test = np.load(os.path.join(file_path,"test_data.npy"))
 print('X_test: ', X_test.shape)
 y_test = np.load(os.path.join(file_path,"test_label.npy"))
 print('y_test: ', y_test.shape)
+

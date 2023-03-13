@@ -146,3 +146,6 @@ class HiddenLayer(object):
     
     def getter_mask(self):
         return self.mask
+    
+    
+    
