@@ -33,10 +33,11 @@ class Activation(object):
         shift = a - np.max(a)
         return np.exp(shift) / np.sum(np.exp(shift))
     
-    def __softmax_deriv(self,a):
-    
-        s = self.__softmax(a)
-        return np.outer(s, (1 - s))
+    def __softmax_deriv(self,s):
+        # SM = s.reshape((-1, 1))
+        # print(SM)
+        jac = np.diagflat(s) - np.dot(s, s.T)
+        return jac
         
  
     def __init__(self, activation='tanh', delta  = 0.01):
@@ -100,7 +101,7 @@ class HiddenLayer(object):
         #     self.W *= 4
 
         # we set the size of bias as the size of output dimension
-        self.b = np.zeros(n_out,)
+        self.b = np.zeros((1,n_out))
 
         # we set he size of weight gradation as the size of weight
         self.grad_W = np.zeros(self.W.shape)
@@ -114,24 +115,28 @@ class HiddenLayer(object):
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
         '''
+        print("input size", input.shape)
         lin_output = np.dot(input, self.W) + self.b
         self.output = (
+          
             lin_output if self.activation is None
             else self.activation(lin_output)
         )
         self.input = input
-        
+        print('output size: ', self.output.shape)
         if isTraining and not self.output_layer:
             self.output = self.dropout_forward(self.output)
         else:
             self.mask = np.ones(input.shape)
-            
+        print("----"*50)
         return self.output
     
     def backward(self, delta, mask = None):
         
         self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
         self.grad_b = delta
+        print("self.grad_W",self.grad_W.shape)
+        print("self.grad_b",self.grad_b.shape)
         if self.activation_deriv:
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
             delta = self.dropout_backward(delta, mask) if mask is not None else delta
@@ -145,5 +150,5 @@ class HiddenLayer(object):
     def dropout_backward(self, delta, previous_masking):
         return delta *  previous_masking
     
-    def getter_mask(self):
+    def obtain_mask(self):
         return self.mask

@@ -24,9 +24,11 @@ class Data_Proprocesing:
         return np.expand_dims(np.argmax(one_encoding, axis=1), axis=1)
         
         
-    def shuffle_randomly(X, y):
+    def shuffle_randomly( X, y):
         randomize = np.arange(X.shape[0])
         np.random.shuffle(randomize)
         print(randomize)
         return X[randomize], y[randomize]
     
+    def accuarcy( y_true, y_pred):
+        return np.sum(y_true == y_pred) / len(y_true)
