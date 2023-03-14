@@ -1,5 +1,5 @@
 import numpy as np
-
+from typing import *
 
 class Activation(object):
     def __tanh(self, x):
@@ -75,7 +75,7 @@ class Activation(object):
                  
 class HiddenLayer(object):
     def __init__(self, n_in, n_out,
-                 activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0, weight_decay = None):
+                 activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0, weight_decay = None, batch_norm = False):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -101,7 +101,14 @@ class HiddenLayer(object):
         self.dropoutrate=dropout
         self.output_layer = output_layer
         self.weight_decay = weight_decay
-
+        self.dropout = dropout
+        
+        
+        self.batch_norm = batch_norm
+        self.batch_mean = []
+        self.batch_var = []
+        self.gamma =  np.ones((1, n_in)) 
+        self.beta =  np.zeros((1, n_in)) 
         # activation deriv of last layer
         self.activation_deriv = None
         if activation_last_layer:
@@ -127,11 +134,26 @@ class HiddenLayer(object):
     # the forward and backward progress (in the hidden layer level) for each training epoch
     # please learn the week2 lec contents carefully to understand these codes.
     
-    def forward(self, input, isTraining = True):
+    def forward(self, input: np.ndarray, isTraining: bool = True) -> np.ndarray:
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
         '''
+        # https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwimv42a_tv9AhUsmlYBHSO9BYQQFnoECAwQAQ&url=https%3A%2F%2Fgithub.com%2Frenan-cunha%2FBatchNormalization&usg=AOvVaw28oNAzfY7iGhQg3qVBktzV
+        if self.batch_norm and isTraining is True:
+            mean = input.mean(axis=0, keepdims=True)
+            var = input.var(axis=0, keepdims=True)
+            self.input_normalized = (input - mean) / np.sqrt(var + 1e-18)
+            input = self.gamma * self.input_normalized + self.beta
+            self.batch_mean.append(mean)
+            self.batch_var.append(var)  
+        elif self.batch_norm and isTraining is False:
+            input_mean = np.mean(self.batch_mean)
+            input_var = np.mean(self.batch_var)
+            input = (input - input_mean) / np.sqrt(input_var + 1e-18)
+            input = input * self.gamma + self.beta
+            
+                      
         lin_output = np.dot(input, self.W) + self.b
         self.output = (
           
@@ -150,12 +172,21 @@ class HiddenLayer(object):
             np.atleast_2d(delta))
         self.grad_b = np.average(delta, axis=0) 
         
+       
+        
         if self.weight_decay is not None:
             self.grad_W += self.weight_decay * self.W  
             
         if self.activation_deriv:
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
             delta = self.dropout_backward(delta, mask) if mask is not None else delta
+            
+            if self.batch_norm:
+                self.grad_gamma_BN = np.mean(delta, axis=0, keepdims=True) *self.input_normalized
+                self.grad_beta_BN = np.mean(delta)
+                # print("self.grad_gamma_BN.shape", self.grad_gamma_BN.shape)
+                # print("self.grad_gamma_BN.shape", self.grad_beta_BN.shape)
+                
         return delta
     
     def dropout_forward(self, input):

@@ -37,7 +37,7 @@ class MLP:
         for i in range(len(layers)-1):      
             if i == len(layers) - 2:
                 output_layer = True
-            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay))
+            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm))
 
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
     # you can try other loss, such as cross entropy.
