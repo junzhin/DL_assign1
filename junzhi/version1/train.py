@@ -52,7 +52,8 @@ LEARNING_RATE = 0.05
 EPOCHS = 50
 DROPOUT_PROB = 1
 BATCH_SIZE = 5000
-WEIGHT_DECAY = 0.01
+
+WEIGHT_DECAY = None # if WEIGHT_DECAY is None, then no weight decay is applied
 
 size = 50000
 loss = 'MSE'
