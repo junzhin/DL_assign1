@@ -3,11 +3,12 @@ from components import *
 from typing import *
 from logger import MetricLogger
 from util import *
+from optimizer import *
 
 
 class MLP:
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, X_test, y_test,layers: List[int], activation: List[Optional[str]], weight_decay = 0.01, loss = "MSE", batch_size = 1, dropoutRate = 0.5, beta:List[float] = [0.9,0.999]):
+    def __init__(self, X_test, y_test,layers: List[int], activation: List[Optional[str]], weight_decay = 0.01, loss = "MSE", batch_size = 1, dropoutRate = 0.5, beta:List[float] = [0.9,0.999],batch_norm:bool= False):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -27,14 +28,12 @@ class MLP:
         self.dropoutRate = dropoutRate
         self.activation=activation
         self.step_count = 0
+        self.batch_norm = batch_norm
         output_layer = False
         
         self.beta1 = beta[0]
         self.beta2 = beta[1]
  
-
-        
-        
         for i in range(len(layers)-1):      
             if i == len(layers) - 2:
                 output_layer = True
@@ -83,10 +82,8 @@ class MLP:
         # see https://levelup.gitconnected.com/killer-combo-softmax-and-cross-entropy-5907442f60ba#:~:text=Putting%20It%20All%20Together
         # 整合在一起得到closed form
         delta = -(y - y_hat) / number_of_sample
-
         return loss, delta
-    
-    
+
     # forward progress: pass the information through the layers and out the results of final output layer
     def forward(self,input, isTraining = True):
         # reset self.masks to empty list            
@@ -110,29 +107,25 @@ class MLP:
 
     # update the network weights after backward.
     # make sure you run the backward function before the update function! 
-    def optimizer_init(self, opt):
-        self.optadam= adam(self.beta1, self.beta2)  
-    def update(self,lr, step_count,method: str = "sgd"):
-      
+    def optimizer_init(self, method):
+        
         if method == "sgd":
-            for layer in self.layers:
-                layer.W -= lr * layer.grad_W
-                layer.b -= lr * layer.grad_b
+            self.opt = sgd()
         elif method == "momentum":
-            for layer in self.layers:
-                layer.v_W = (0.9* layer.v_W) + (lr * layer.grad_W)
-                layer.v_b = (0.9 * layer.v_b) + (lr * layer.grad_b)
-                layer.W = layer.W - layer.v_W
-                layer.b = layer.b - layer.v_b
+            self.opt= sgd_momentum()  
         elif method == "adam":
-            # print("current step count is", step_count)
+            self.opt= adam(self.beta1, self.beta2)  
+        
+    def update(self,lr, step_count):         
+        if step_count == 1:
+            self.opt.reset()
+            
+        for index, layer in enumerate(self.layers):
             if step_count == 1:
-                self.optadam.reset()
-            for index, layer in enumerate(self.layers):
-                if step_count == 1:
-                    self.optadam.init_adam(layer.grad_W, layer.grad_b)
-                layer.W, layer.b = self.optadam.update_adam(
-                    index, step_count, lr, layer.W, layer.b, layer.grad_W, layer.grad_b)
+                self.opt.init_first_step(layer.grad_W, layer.grad_b)
+                
+            layer.W, layer.b = self.opt.update_parameter(
+                index, step_count,layer,lr, layer.W, layer.b, layer.grad_W, layer.grad_b)
        
             
     
@@ -185,7 +178,7 @@ class MLP:
                 self.backward(delta) 
                 
                 # update the model parameters
-                self.update(learning_rate,step_count=self.step_count, method = opt)   
+                self.update(learning_rate,step_count=self.step_count)   
                 
                 
                 # correct the batch size if it is the last batch is not full
@@ -214,7 +207,7 @@ class MLP:
             
            
             print(
-                f'Epoch {k} |' f'train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} |' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} |' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |')
+                f'Epoch {k} | ' f'train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} | ' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} | ' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |')
      
         
         statistic = dict()
@@ -235,54 +228,3 @@ class MLP:
         return np.array(output).squeeze(axis=1)
     
     
-class adam():
-    def __init__(self, beta1, beta2):
-        self.beta1 = beta1
-        self.beta2 = beta2
-        self.epsilon = 1e-16
-        self.m_dws = []
-        self.v_dws = []
-        self.m_dbs = []
-        self.v_dbs = []
-
-    def reset(self):
-        self.m_dws = []
-        self.v_dws = []
-        self.m_dbs = []
-        self.v_dbs = []
-
-    def init_adam(self, dw, db):
-        self.m_dws.append(np.zeros(dw.shape))
-        self.v_dws.append(np.zeros(dw.shape))
-        self.m_dbs.append(np.zeros(db.shape))
-        self.v_dbs.append(np.zeros(db.shape))
-        
-    def update_adam(self, idx, step_count, lr, w, b, dw, db):
-        
-        # print("self.m_dws", len(self.m_dws))
-        # print("self.v_dws", len(self.v_dws))
-        # print("self.m_dbs",len(self.m_dbs))
-        # print("self.v_dbs", len(self.v_dbs))
-        # print("current index", idx)
-
-        # beta 1
-        self.m_dws[idx] = self.beta1 * self.m_dws[idx] + (1 - self.beta1) * dw
-        self.m_dbs[idx] = self.beta1 * self.m_dbs[idx] + (1 - self.beta1) * db
-
-        # beta 2
-        self.v_dws[idx] = self.beta2 * \
-            self.v_dws[idx] + (1 - self.beta2) * (dw ** 2)
-        self.v_dbs[idx] = self.beta2 * \
-            self.v_dbs[idx] + (1 - self.beta2) * (db ** 2)
-
-        # correct bias
-        m_dw_corrected = self.m_dws[idx] / (1 - self.beta1 ** (step_count))
-        m_db_corrected = self.m_dbs[idx] / (1 - self.beta1 ** (step_count))
-        v_dw_corrected = self.v_dws[idx] / (1 - self.beta2 ** (step_count))
-        v_db_corrected = self.v_dbs[idx] / (1 - self.beta2 ** (step_count))
-
-        # update parameters with adjusted bias and learning rate
-        w = w - lr * m_dw_corrected / (np.sqrt(v_dw_corrected) + self.epsilon)
-        b = b - lr * m_db_corrected / (np.sqrt(v_db_corrected) + self.epsilon)
-
-        return w, b

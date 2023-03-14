@@ -159,7 +159,8 @@ class HiddenLayer(object):
         return delta
     
     def dropout_forward(self, input):
-        self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
+        self.mask = np.random.binomial(1, 1 - self.dropoutrate, size=input.shape) 
+        # self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
         input *= self.mask
         return input
     
