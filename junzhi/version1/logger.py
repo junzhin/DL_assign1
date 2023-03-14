@@ -18,21 +18,28 @@ class MetricLogger:
         
 
     def log_train(self, loss: float, acc: float, current_epoch: int):
-        self.train_loss.append(loss)
-        self.train_acc.append(acc)
+        self.train_loss.append(loss.value)
+        self.train_acc.append(acc.value)
         self.train_epochs.append(current_epoch)
         self.train_iterations += 1
 
     def log_val(self, loss: float, acc: float,  current_epoch: int):
-        self.val_loss.append(loss)
-        self.val_acc.append(acc)
+        self.val_loss.append(loss.value)
+        self.val_acc.append(acc.value)
         self.val_epochs.append(current_epoch)
         self.val_iterations += 1
+        
 
     def print_last(self, current_epoch: int):
-        print(f'Epoch {current_epoch} | ' \
-              f'Train loss: {np.mean(self.train_loss[self.train_epochs == current_epoch])/self.batch_size:.4f} | Train accuracy: {np.mean(self.train_acc[self.train_epochs == current_epoch])/self.batch_size:.4f} | '
-          f'Validation loss: {self.val_loss[self.val_epochs == current_epoch]/self.data_length:.4f} | Validation accuracy: {np.mean(self.val_acc[self.val_epochs == current_epoch]):.4f}')
+        print(f'Epoch {current_epoch} |')
+        print(f'Train loss: {np.mean(self.train_loss[self.train_epochs == current_epoch])/self.batch_size:.4f} |') 
+        print(f'Train accuracy: {np.mean(self.train_acc[self.train_epochs == current_epoch])/self.batch_size:.4f} |')
+        # print(self.train_loss)
+        # print(self.train_acc)
+        print(self.compute_averages(self.train_loss,self.train_epochs)/self.batch_size)
+        print(self.compute_averages(self.train_acc, self.train_epochs)/self.batch_size)
+        # print(f'Validation loss: {self.val_loss[self.val_epochs == current_epoch]/self.data_length:.4f}')
+        # print(f'Validation accuracy: {np.mean(self.val_acc[self.val_epochs == current_epoch]):.4f}')
 
     def plot_loss(self) -> None:
         plt.plot(self.compute_averages(self.train_loss,self.train_epochs)/self.batch_size, label='Train')
@@ -55,6 +62,9 @@ class MetricLogger:
             
     def  compute_averages(self, arra: np.ndarray, indicator: str) -> np.ndarray:
         counts = np.bincount(indicator)
+        assert  len(arra) == len(indicator)
+        print(indicator)
+        print(arra.shape)
         sums = np.bincount(indicator, weights=arra) 
         averages = sums / counts
  

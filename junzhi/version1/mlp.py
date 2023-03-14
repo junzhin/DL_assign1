@@ -24,8 +24,6 @@ class MLP:
         self.batch_size = batch_size
         self.X_test = X_test
         self.y_test = y_test
-        print("self.X_test.shape", self.X_test.shape)
-        print("self.y_test", self.y_test.shape)
         self.y_test_label = Data_Proprocesing.decode_one_encoding(self.y_test)
         self.dropoutRate = dropoutRate
         self.activation=activation
@@ -36,6 +34,28 @@ class MLP:
                 output_layer = True
             self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate))
 
+
+    # define the objection/loss function, we use mean sqaure error (MSE) as the loss
+    # you can try other loss, such as cross entropy.
+    # when you try to change the loss, you should also consider the backward formula for the new loss as well!
+ 
+
+    
+    def criterion_CE(self, y, y_hat, isTraining = True):
+        y = Data_Proprocesing.one_encoding(y)
+        assert y.shape == y_hat.shape
+        number_of_sample = y.shape[0]
+        loss = - np.nansum(y * np.log(y_hat + 1e-30))
+        loss = loss / number_of_sample
+        loss = loss*self.weight_decay
+        
+        if isTraining == False:
+            return loss, None
+        delta = (y_hat - y) / (self.batch_size)
+
+        return loss, delta
+    
+    
     # forward progress: pass the information through the layers and out the results of final output layer
     def forward(self,input, isTraining = True):
         # reset self.masks to empty list            
@@ -47,50 +67,9 @@ class MLP:
             input=output
         return output
 
-    # define the objection/loss function, we use mean sqaure error (MSE) as the loss
-    # you can try other loss, such as cross entropy.
-    # when you try to change the loss, you should also consider the backward formula for the new loss as well!
-    
-    def criteron(self, y, y_hat,require_grad = True):
-        if self.loss == "MSE":
-            return self.criterion_MSE(y, y_hat, require_grad = require_grad)
-        elif self.loss == "CE":
-            return self.criterion_CE(y, y_hat, require_grad=require_grad)
-        else:
-            raise ValueError("Unknown method: {}".format(self.loss))
-
-                             
-    def criterion_MSE(self,y,y_hat, require_grad = True):
-        activation_deriv=Activation(self.activation[-1]).f_deriv
-        # MSE
-        error = y-y_hat
-        loss=error**2
-        # calculate the MSE's delta of the output layer
-        delta=-error*activation_deriv(y_hat)    
-        # return loss and delta
-        return loss,delta
-    
-    def criterion_CE(self,y,y_hat, require_grad = True):
-        activation_deriv=Activation(self.activation[-1]).f_deriv
-        
-        assert y.shape == y_hat.shape
-        
-        loss = -np.sum(y * np.log(y_hat + 1e-8))
-        loss *= self.weight_decay
-        
-        print("y shape: ", y.shape)
-        print("y_hat shape: ", y_hat.shape)
-        
-        if require_grad == False:
-            return loss, None
-        delta = (y - y_hat) * activation_deriv(y_hat)
-        return loss, delta
-        
-        return loss,delta
     # backward progress  
     def backward(self,delta):
-        delta=self.layers[-1].backward(delta,self.masks[-1])
-        for layerIndex in reversed(range(len(self.layers[:-1]))):
+        for layerIndex in reversed(range(len(self.layers))):
             if layerIndex == 0:
                 delta = self.layers[layerIndex].backward(delta, None)
             else:
@@ -107,7 +86,11 @@ class MLP:
                 layer.W -= lr * layer.grad_W
                 layer.b -= lr * layer.grad_b
         elif method == "momentum":
-            pass
+            for layer in self.layers:
+                layer.v_W = (0.9* layer.v_W) + (lr * layer.grad_W)
+                layer.v_b = (0.9 * layer.v_b) + (lr * layer.grad_b)
+                layer.W = layer.W - layer.v_W
+                layer.b = layer.b - layer.v_b
         elif method == "adam":
             pass
             
@@ -127,10 +110,15 @@ class MLP:
         X=np.array(X)
         y=np.array(y)
         
-        print(X.shape)
-        print(y.shape)
+        print("X shape",X.shape)
+        print("y shape",y.shape)
         
-        self.logger = MetricLogger(length = X.shape[0],mode='iter',batch_size=self.batch_size)
+        train_loss_per_epochs = []
+        val_loss_per_epochs = []
+        train_acc_per_epochs = []
+        val_acc_per_epochs = []     
+ 
+        
         num_batches = int(np.ceil(X.shape[0] / self.batch_size))
 
         for k in range(epochs):
@@ -139,63 +127,63 @@ class MLP:
             index = 0
             current_batch_size = self.batch_size
             X,y = Data_Proprocesing.shuffle_randomly(X,y)
-            y_label = Data_Proprocesing.decode_one_encoding(y)
+     
             
+            current_train_loss = []
             for _ in range(num_batches):
                 
                 # forward pass
                 y_hat = self.forward(X[index: index + current_batch_size,])
-                
-                print('y_hat: ', y_hat)
-                print('y', y[index:index + current_batch_size,:])
-                
-                
+                # print('y_hat: ', y_hat.shape)
+                # print('y[index:index + current_batch_size, :].shape',
+                #       y[index:index + current_batch_size, :].shape)
+        
                 # backward pass
-                loss, delta=self.criteron(y[index:index + current_batch_size,:],y_hat)
+                loss, delta = self.criterion_CE(
+                    y[index:index + current_batch_size, :], y_hat, isTraining=True)
                 
-           
- 
+                current_train_loss.append(loss)
+    
                 self.backward(delta) 
                 
                 # update the model parameters
                 self.update(learning_rate,method = opt)   
                 
-                # keep track of the training loss and accuracy
-            
-                y_predict_label = Data_Proprocesing.decode_one_encoding(y_hat)
-                print('y_predict_label: ', y_predict_label)
-                print("y_label[index:index + current_batch_size]",
-                      y_label[index:index + current_batch_size])
-                
-               
-                self.logger.log_train(loss,Data_Proprocesing.accuarcy(y_label[index:index + current_batch_size],y_predict_label),k)
-    
-                # update of the current batch size if the batch size is not divisible by the number of batch size
+           
                 if index + self.batch_size > X.shape[0]:
                     current_batch_size = X.shape[0] - index
                 else:
                     index += current_batch_size
-                    
-            # keep track of the validation loss and accuracy
-            y_test_predict = self.predict(self.X_test)
-            y_test_predict_label = Data_Proprocesing.decode_one_encoding(y_test_predict)
-            print("self.y_test", self.y_test.shape)
-            print("y_test_predict.shape",y_test_predict.squeeze(axis=1).shape)
-            val_loss= self.criteron(self.y_test, y_test_predict.squeeze(axis=1),require_grad = False)[0]
-            self.logger.log_val(val_loss, Data_Proprocesing.accuarcy(self.y_test_label,y_test_predict_label),k)
+                
+                # print(current_train_loss)
+            # train_loss_per_epochs.append(np.mean(current_train_loss))
+            y_train_pred = self.predict(X)
+            train_loss,_ = self.criterion_CE(
+                y, y_train_pred, isTraining=False)
+            train_loss_per_epochs.append(train_loss)
             
-            self.logger.print_last(k)
-    
-        return self.logger
+            train_acc_per_epochs.append(
+                Data_Proprocesing.accuarcy(y, y_train_pred))
+            
+            y_test_pred = self.predict(self.X_test)
+            val_loss,_ = self.criterion_CE(
+                self.y_test, y_test_pred, isTraining=False)
+            val_loss_per_epochs.append(val_loss)
+            val_acc_per_epochs.append(
+                Data_Proprocesing.accuarcy(self.y_test, y_test_pred))
+            
+           
+            print(
+                f'Epoch {k} |' f'train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} |' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} |' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |')
+     
+            
+        return  
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
     def predict(self, x):
         x = np.array(x)
-        print("++++")
-        print("x.shape", x.shape)
-        print("+++++")
         output = []
         for i in np.arange(x.shape[0]):
             output.append(self.forward(x[i,:], isTraining=False))
-        return np.array(output)
+        return np.array(output).squeeze(axis=1)

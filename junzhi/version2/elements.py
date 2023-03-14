@@ -30,30 +30,14 @@ class Activation(object):
         return np.where(a <= 0, self.delta, 1)
     
     def __softmax(self, a):
-        shift = a - np.max(a, axis=1, keepdims=True)
-   
-        
-        # if self.indicator  is False:
-        #     print("a", a.shape)
-        #     print('a : ', a )
-        #     print('np.max(a, axis=1, keepdims=True): ', np.max(a, axis=1, keepdims=True))
-        #     print('shift: ', shift.shape)
-        #     print("shift")
-        #     print(shift)
-        #     print(np.exp(shift) / np.sum(np.exp(shift)))
-        #     print(' np.sum(np.exp(shift)): ',  np.sum(np.exp(shift), axis=1, keepdims=True))
-        #     self.indicator = True
-      
-        return np.exp(shift) / np.sum(np.exp(shift), axis=1, keepdims=True)
-
-    def __softmax_deriv(self,s):
-        
-        jac = np.diagflat(s) - np.dot(s, s.T)
-        return jac
+        shift = a - np.max(a)
+        return np.exp(shift) / np.sum(np.exp(shift))
+    
+    def __softmax_deriv(self,s, s_hat):
+        return s - s_hat
         
  
     def __init__(self, activation='tanh', delta  = 0.01):
-        self.indicator = False
         if activation == 'logistic':
             self.f = self.__logistic
             self.f_deriv = self.__logistic_deriv
@@ -68,13 +52,20 @@ class Activation(object):
             self.f = self.__leakyrelu
             self.f_deriv = self.__leakyrelu_deriv
         elif activation == "softmax":
-      
             self.f = self.__softmax
             self.f_deriv = self.__softmax_deriv
-                 
-class HiddenLayer(object):
-    def __init__(self, n_in, n_out,
-                 activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0):
+            
+            
+            
+            
+            
+# now we define the hidden layer for the mlp
+# for example, h1 = HiddenLayer(10, 5, activation="tanh") means we create a layer with 10 dimension input and 5 dimension output, and using tanh activation function.
+# notes: make sure the input size of hiddle layer should be matched with the output size of the previous layer!
+
+class HiddenLayer(object):    
+    def __init__(self,n_in, n_out,
+                 activation_last_layer='tanh',activation='tanh', W=None, b=None):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -94,40 +85,34 @@ class HiddenLayer(object):
         :param activation: Non linearity to be applied in the hidden
                            layer
         """
-        self.mask = None
-        self.input = None
-        self.activation = Activation(activation).f
-        self.dropoutrate=dropout
-        self.output_layer = output_layer
-
+        self.input=None
+        self.activation=Activation(activation).f
+        
         # activation deriv of last layer
-        self.activation_deriv = None
+        self.activation_deriv=None
+        self.dropout = 0.5
         if activation_last_layer:
-            self.activation_deriv = Activation(activation_last_layer).f_deriv
+            self.activation_deriv=Activation(activation_last_layer).f_deriv
 
         # we randomly assign small values for the weights as the initiallization
         self.W = np.random.uniform(
-            low=-np.sqrt(6. / (n_in + n_out)),
-            high=np.sqrt(6. / (n_in + n_out)),
-            size=(n_in, n_out)
+                low=-np.sqrt(6. / (n_in + n_out)),
+                high=np.sqrt(6. / (n_in + n_out)),
+                size=(n_in, n_out)
         )
         # if activation == 'logistic':
         #     self.W *= 4
 
         # we set the size of bias as the size of output dimension
-        self.b = np.zeros((1,n_out),)
+        self.b = np.zeros(n_out,)
         
-       
-
         # we set he size of weight gradation as the size of weight
         self.grad_W = np.zeros(self.W.shape)
         self.grad_b = np.zeros(self.b.shape)
-        self.v_W = np.zeros_like(self.grad_W)
-        self.v_b = np.zeros_like(self.grad_b)
-
-    # the forward and backward progress (in the hidden layer level) for each training epoch
-    # please learn the week2 lec contents carefully to understand these codes.
+        
     
+    # the forward and backward progress (in the hidden layer level) for each training epoch
+    # please learn the week2 lec contents carefully to understand these codes. 
     def forward(self, input, isTraining = True):
         '''
         :type input: numpy.array
@@ -135,34 +120,29 @@ class HiddenLayer(object):
         '''
         lin_output = np.dot(input, self.W) + self.b
         self.output = (
-          
             lin_output if self.activation is None
             else self.activation(lin_output)
         )
-        self.input = input
-        if isTraining and not self.output_layer:
+        self.input=input
+        if isTraining is True and self.dropout > 0:
             self.output = self.dropout_forward(self.output)
         else:
-            self.mask = np.ones(input.shape)
+            self.mask = np.ones(self.output.shape)
         return self.output
     
-    def backward(self, delta, mask = None):
-        self.grad_W = np.atleast_2d(self.input).T.dot(
-            np.atleast_2d(delta))
-        self.grad_b = np.average(delta, axis=0) 
-  
+    def backward(self, delta, masking):         
+        self.grad_W = np.atleast_2d(self.input).T.dot(np.atleast_2d(delta))
+        self.grad_b = delta
         if self.activation_deriv:
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
-            delta = self.dropout_backward(delta, mask) if mask is not None else delta
+            
+        if
         return delta
     
     def dropout_forward(self, input):
-        self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
+        self.mask = np.random.choice([0, 1], size=input.shape, p=[self.dropoutrate, 1 - self.dropoutrate])
         input *= self.mask
         return input
     
     def dropout_backward(self, delta, previous_masking):
         return delta *  previous_masking
-    
-    def obtain_mask(self):
-        return self.mask

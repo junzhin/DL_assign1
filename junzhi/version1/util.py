@@ -9,7 +9,7 @@ class Data_Proprocesing:
     
     def one_encoding(X):
         
-        numOfClasses = len(np.unique(X))
+        numOfClasses = 10
         
         one_encoding_of_X = []
         
@@ -27,8 +27,8 @@ class Data_Proprocesing:
     def shuffle_randomly( X, y):
         randomize = np.arange(X.shape[0])
         np.random.shuffle(randomize)
-        print(randomize)
         return X[randomize], y[randomize]
     
     def accuarcy( y_true, y_pred):
+        y_pred = np.expand_dims(np.argmax(y_pred, axis=1),axis=1)
         return np.sum(y_true == y_pred) / len(y_true)
