@@ -32,3 +32,5 @@ class Data_Proprocesing:
     def accuarcy( y_true, y_pred):
         y_pred = np.expand_dims(np.argmax(y_pred, axis=1),axis=1)
         return np.sum(y_true == y_pred) / len(y_true)
+    
+    

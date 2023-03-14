@@ -31,8 +31,7 @@ class Activation(object):
     
     def __softmax(self, a):
         shift = a - np.max(a, axis=1, keepdims=True)
-   
-        
+
         # if self.indicator  is False:
         #     print("a", a.shape)
         #     print('a : ', a )
@@ -45,10 +44,12 @@ class Activation(object):
         #     self.indicator = True
       
         return np.exp(shift) / np.sum(np.exp(shift), axis=1, keepdims=True)
-
-    def __softmax_deriv(self,s):
-        
-        jac = np.diagflat(s) - np.dot(s, s.T)
+    
+    # 这里不一定用的到， 其中对于softmax 的导数， 一般用的是交叉熵的导数 结合使用
+    def __softmax_deriv(self,a):
+        a = a.reshape((-1,1))
+        print("a",a.shape)
+        jac = np.diagflat(a) - np.dot(a, a.T)
         return jac
         
  
@@ -74,7 +75,7 @@ class Activation(object):
                  
 class HiddenLayer(object):
     def __init__(self, n_in, n_out,
-                 activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0):
+                 activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0, weight_decay = None):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
         sigmoidal activation function. Weight matrix W is of shape (n_in,n_out)
@@ -99,6 +100,7 @@ class HiddenLayer(object):
         self.activation = Activation(activation).f
         self.dropoutrate=dropout
         self.output_layer = output_layer
+        self.weight_decay = weight_decay
 
         # activation deriv of last layer
         self.activation_deriv = None
@@ -111,14 +113,11 @@ class HiddenLayer(object):
             high=np.sqrt(6. / (n_in + n_out)),
             size=(n_in, n_out)
         )
-        # if activation == 'logistic':
-        #     self.W *= 4
+     
 
         # we set the size of bias as the size of output dimension
         self.b = np.zeros((1,n_out),)
         
-       
-
         # we set he size of weight gradation as the size of weight
         self.grad_W = np.zeros(self.W.shape)
         self.grad_b = np.zeros(self.b.shape)
@@ -150,7 +149,10 @@ class HiddenLayer(object):
         self.grad_W = np.atleast_2d(self.input).T.dot(
             np.atleast_2d(delta))
         self.grad_b = np.average(delta, axis=0) 
-  
+        
+        if self.weight_decay is not None:
+            self.grad_W += self.weight_decay * self.W  
+            
         if self.activation_deriv:
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
             delta = self.dropout_backward(delta, mask) if mask is not None else delta

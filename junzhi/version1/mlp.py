@@ -7,7 +7,7 @@ from util import *
 
 class MLP:
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, X_test, y_test,layers: List[int], activation: List[Optional[str]], weight_decay = 0.99, loss = "MSE", batch_size = 1, dropoutRate = 0.5):
+    def __init__(self, X_test, y_test,layers: List[int], activation: List[Optional[str]], weight_decay = 0.01, loss = "MSE", batch_size = 1, dropoutRate = 0.5):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -32,26 +32,51 @@ class MLP:
         for i in range(len(layers)-1):      
             if i == len(layers) - 2:
                 output_layer = True
-            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate))
-
+            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay))
 
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
     # you can try other loss, such as cross entropy.
     # when you try to change the loss, you should also consider the backward formula for the new loss as well!
- 
-
+    def criterion(self,y,y_hat, isTraining = True):
+        if self.loss == "MSE":
+            return self.criterion_MSE(y,y_hat, isTraining)
+        elif self.loss == "CE":
+            return self.criterion_CE(y,y_hat, isTraining)
+        
+        
+           
+    def criterion_MSE(self,y,y_hat, isTraining = True):
+            activation_deriv=Activation(self.activation[-1]).f_deriv
+            # MSE
+            y = Data_Proprocesing.one_encoding(y)
+            
+            error = y - y_hat
+            loss = error**2
+            
+            if isTraining is False:
+                
+                return np.sum(loss)/y.shape[0], None
+            
+            delta = -error * activation_deriv(y_hat) / y.shape[0]
+            return np.sum(loss)/y.shape[0], delta
+        
     
     def criterion_CE(self, y, y_hat, isTraining = True):
         y = Data_Proprocesing.one_encoding(y)
+        
+        
         assert y.shape == y_hat.shape
+        
         number_of_sample = y.shape[0]
         loss = - np.nansum(y * np.log(y_hat + 1e-30))
         loss = loss / number_of_sample
-        loss = loss*self.weight_decay
         
         if isTraining == False:
             return loss, None
-        delta = (y_hat - y) / (self.batch_size)
+        
+        # see https://levelup.gitconnected.com/killer-combo-softmax-and-cross-entropy-5907442f60ba
+        # 整合在一起得到closed form
+        delta = (y_hat-y) / number_of_sample
 
         return loss, delta
     
@@ -122,43 +147,37 @@ class MLP:
         num_batches = int(np.ceil(X.shape[0] / self.batch_size))
 
         for k in range(epochs):
-            loss=np.zeros(X.shape[0])
             
             index = 0
             current_batch_size = self.batch_size
             X,y = Data_Proprocesing.shuffle_randomly(X,y)
-     
-            
-            current_train_loss = []
+
             for _ in range(num_batches):
                 
                 # forward pass
                 y_hat = self.forward(X[index: index + current_batch_size,])
-                # print('y_hat: ', y_hat.shape)
-                # print('y[index:index + current_batch_size, :].shape',
-                #       y[index:index + current_batch_size, :].shape)
-        
+                
                 # backward pass
-                loss, delta = self.criterion_CE(
+                _, delta = self.criterion(
                     y[index:index + current_batch_size, :], y_hat, isTraining=True)
                 
-                current_train_loss.append(loss)
     
                 self.backward(delta) 
                 
                 # update the model parameters
                 self.update(learning_rate,method = opt)   
                 
-           
+                
+                # correct the batch size if it is the last batch is not full
                 if index + self.batch_size > X.shape[0]:
                     current_batch_size = X.shape[0] - index
                 else:
                     index += current_batch_size
-                
-                # print(current_train_loss)
-            # train_loss_per_epochs.append(np.mean(current_train_loss))
+            
+            
+            # keep track of experiment results
             y_train_pred = self.predict(X)
-            train_loss,_ = self.criterion_CE(
+            train_loss,_ = self.criterion(
                 y, y_train_pred, isTraining=False)
             train_loss_per_epochs.append(train_loss)
             
@@ -166,7 +185,7 @@ class MLP:
                 Data_Proprocesing.accuarcy(y, y_train_pred))
             
             y_test_pred = self.predict(self.X_test)
-            val_loss,_ = self.criterion_CE(
+            val_loss, _ = self.criterion(
                 self.y_test, y_test_pred, isTraining=False)
             val_loss_per_epochs.append(val_loss)
             val_acc_per_epochs.append(
@@ -176,8 +195,14 @@ class MLP:
             print(
                 f'Epoch {k} |' f'train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} |' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} |' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |')
      
-            
-        return  
+        
+        statistic = dict()
+        statistic['train_loss_per_epochs'] = train_loss_per_epochs
+        statistic['val_loss_per_epochs'] = val_loss_per_epochs
+        statistic['train_acc_per_epochs'] = train_acc_per_epochs
+        statistic['val_acc_per_epochs'] = val_acc_per_epochs  
+        
+        return  statistic
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.

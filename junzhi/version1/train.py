@@ -44,21 +44,27 @@ if debug:
     
 # Hyperparameters
 LAYER_NEURONS = [128, 100, 80, 50,10]
-LAYER_ACTIVATION_FUNCS = [None, 'relu', 'relu','relu','softmax']
+LAYER_ACTIVATION_FUNCS = [None, 'tanh', 'tanh', 'relu', 'relu']
+
 assert len(LAYER_NEURONS) == len(LAYER_ACTIVATION_FUNCS)
+
 LEARNING_RATE = 0.05
-EPOCHS = 200
+EPOCHS = 50
 DROPOUT_PROB = 1
-BATCH_SIZE = 1000
-WEIGHT_DECAY = 0.98
+BATCH_SIZE = 5000
+WEIGHT_DECAY = 0.01
+
 size = 50000
+loss = 'MSE'
+optimizer = 'momentum'
+
 # Instantiate the multi-layer neural network
 nn = MLP(X_test[:int(size*0.2)], y_test[:int(size*0.2)], layers=LAYER_NEURONS, activation=LAYER_ACTIVATION_FUNCS,
-         dropoutRate=DROPOUT_PROB, weight_decay=WEIGHT_DECAY, loss='CE', batch_size=BATCH_SIZE)
+         dropoutRate=DROPOUT_PROB, weight_decay=WEIGHT_DECAY, loss=loss, batch_size=BATCH_SIZE)
 
 # Perform fitting using the training dataset
 t0 = time.time()
-trial1_logger = nn.fit(X_train[:size], y_train[:size], learning_rate=LEARNING_RATE, epochs=EPOCHS, opt = 'sgd')
+trial1_logger = nn.fit(X_train[:size], y_train[:size], learning_rate=LEARNING_RATE, epochs=EPOCHS, opt = optimizer)
 t1 = time.time()
 print(f"============= Model Build Done =============")
-print(f"Time taken to build model: {round(t1 - t0, 4)} seconds.")
+print(f"Time taken to build model: {round(t1 - t0, 4)} seconds with {EPOCHS} Epochs of training.")
