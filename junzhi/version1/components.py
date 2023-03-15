@@ -140,6 +140,7 @@ class HiddenLayer(object):
         :param input: a symbolic tensor of shape (n_in,)
         '''
         # https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwimv42a_tv9AhUsmlYBHSO9BYQQFnoECAwQAQ&url=https%3A%2F%2Fgithub.com%2Frenan-cunha%2FBatchNormalization&usg=AOvVaw28oNAzfY7iGhQg3qVBktzV
+        # https://github.com/renan-cunha/BatchNormalization
         if self.batch_norm and isTraining is True:
             mean = input.mean(axis=0, keepdims=True)
             var = input.var(axis=0, keepdims=True)
