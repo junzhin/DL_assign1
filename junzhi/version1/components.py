@@ -105,8 +105,8 @@ class HiddenLayer(object):
         
         
         self.batch_norm = batch_norm
-        self.batch_mean = []
-        self.batch_var = []
+        self.batch_mean = np.zeros((1, n_in))
+        self.batch_var = np.zeros((1, n_in))
         self.gamma =  np.ones((1, n_in)) 
         self.beta =  np.zeros((1, n_in)) 
         # activation deriv of last layer
@@ -145,12 +145,10 @@ class HiddenLayer(object):
             var = input.var(axis=0, keepdims=True)
             self.input_normalized = (input - mean) / np.sqrt(var + 1e-18)
             input = self.gamma * self.input_normalized + self.beta
-            self.batch_mean.append(mean)
-            self.batch_var.append(var)  
+            self.batch_mean = self.batch_mean * 0.9 + mean* 0.1
+            self.batch_var = self.batch_var * 0.9 + var * 0.1  
         elif self.batch_norm and isTraining is False:
-            input_mean = np.mean(self.batch_mean)
-            input_var = np.mean(self.batch_var)
-            input = (input - input_mean) / np.sqrt(input_var + 1e-18)
+            input = (input - self.batch_mean) / np.sqrt(self.batch_var + 1e-18)
             input = input * self.gamma + self.beta
             
                       
@@ -182,8 +180,13 @@ class HiddenLayer(object):
             delta = self.dropout_backward(delta, mask) if mask is not None else delta
             
             if self.batch_norm:
-                self.grad_gamma_BN = np.mean(delta, axis=0, keepdims=True) *self.input_normalized
-                self.grad_beta_BN = np.mean(delta)
+                # print("entering batch norm")
+                # print("delta.shape",  delta.shape)
+                # print("self.input_normalized", self.input_normalized.shape)
+                # print("entering batch norm")
+                self.grad_gamma = np.sum(
+                    delta  * self.input_normalized, axis=0)
+                self.grad_beta = np.sum(delta, axis=0)
                 # print("self.grad_gamma_BN.shape", self.grad_gamma_BN.shape)
                 # print("self.grad_gamma_BN.shape", self.grad_beta_BN.shape)
                 

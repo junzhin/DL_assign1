@@ -40,12 +40,12 @@ if debug:
 # ----------------------------------------------------------------------------------   
 # Hyperparameters
 # LAYER_NEURONS = [128, 100, 80, 50,10]
-LAYER_NEURONS = [128, 200, 120, 80, 10]
-LAYER_ACTIVATION_FUNCS = [None, 'tanh', 'tanh', 'relu', 'softmax']
+LAYER_NEURONS = [128, 100, 50, 10]
+LAYER_ACTIVATION_FUNCS = [None, 'relu','relu', 'softmax']
 LEARNING_RATE = 0.0005
 EPOCHS = 200
-DROPOUT_PROB = 0.2 
-BATCH_SIZE = 1024
+DROPOUT_PROB = 0
+BATCH_SIZE = 100
 WEIGHT_DECAY = 0.01  # if WEIGHT_DECAY is None, then no weight decay is applied
 BETA = [0.9,0.999]
 SIZE = 50000    # Size of training dataset, 50000 is the full dataset

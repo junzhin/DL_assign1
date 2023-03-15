@@ -37,7 +37,7 @@ class MLP:
         for i in range(len(layers)-1):      
             if i == len(layers) - 2:
                 output_layer = True
-            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm))
+            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm if i != 0 else False)) # the last layer is the output layer, so we set its output_layer to be True, the first layer is the input layer, so we set its batch_norm to be False
 
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
     # you can try other loss, such as cross entropy.
@@ -98,6 +98,7 @@ class MLP:
     # backward progress  
     def backward(self,delta):
         for layerIndex in reversed(range(len(self.layers))):
+            # print("layer: ", layerIndex)
             if layerIndex == 0:
                 delta = self.layers[layerIndex].backward(delta, None)
             else:
@@ -121,11 +122,18 @@ class MLP:
             self.opt.reset()
             
         for index, layer in enumerate(self.layers):
+            # print("layer: ", index)
             if step_count == 1:
                 self.opt.init_first_step(layer.grad_W, layer.grad_b)
                 
             layer.W, layer.b = self.opt.update_parameter(
                 index, step_count,layer,lr, layer.W, layer.b, layer.grad_W, layer.grad_b)
+            
+            if layer.batch_norm == True:
+                # print("layer.gamma", layer.gamma.shape)
+                # print("layer.grad_gamma", layer.grad_gamma.shape)
+                layer.gamma -= lr * layer.grad_gamma
+                layer.beta -= lr * layer.grad_beta
        
             
     
