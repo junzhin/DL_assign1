@@ -170,8 +170,6 @@ class HiddenLayer(object):
             np.atleast_2d(delta))
         self.grad_b = np.average(delta, axis=0) 
         
-       
-        
         if self.weight_decay is not None:
             self.grad_W += self.weight_decay * self.W  
             
@@ -187,8 +185,6 @@ class HiddenLayer(object):
                 self.grad_gamma = np.sum(
                     delta  * self.input_normalized, axis=0)
                 self.grad_beta = np.sum(delta, axis=0)
-                # print("self.grad_gamma_BN.shape", self.grad_gamma_BN.shape)
-                # print("self.grad_gamma_BN.shape", self.grad_beta_BN.shape)
                 
         return delta
     
