@@ -39,16 +39,16 @@ if debug:
 
 # ----------------------------------------------------------------------------------   
 # Hyperparameters
-# LAYER_NEURONS = [128, 100, 80, 50,10]
-LAYER_NEURONS = [128,100,110,100, 10]
+LAYER_NEURONS = [128, 90, 80, 50,10]
+# LAYER_NEURONS = [128,100,110,100, 10]
 LAYER_ACTIVATION_FUNCS = [None, 'leakyrelu',
                           'leakyrelu', 'leakyrelu', 'softmax']
-LEARNING_RATE = 0.005
+LEARNING_RATE = 0.0005
 EPOCHS = 200
-DROPOUT_PROB = 0.5
+DROPOUT_PROB = 0.8
 assert DROPOUT_PROB <= 1 and DROPOUT_PROB >= 0
-BATCH_SIZE = 1000
-WEIGHT_DECAY = 0  # if WEIGHT_DECAY is None, then no weight decay is applied
+BATCH_SIZE = 512   # if BATCH_SIZE is None, then no batch is used
+WEIGHT_DECAY = 0 # if WEIGHT_DECAY is None, then no weight decay is applied
 BETA = [0.9,0.999]
 SIZE = 10000    # Size of training dataset, 50000 is the full dataset
 BATCHNORM = True

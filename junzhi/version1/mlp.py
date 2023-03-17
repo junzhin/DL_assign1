@@ -1,9 +1,9 @@
 import numpy as np
 from components import * 
 from typing import *
-from logger import MetricLogger
 from util import *
 from optimizer import *
+from sklearn.metrics import *
 
 
 class MLP:
@@ -29,15 +29,15 @@ class MLP:
         self.activation=activation
         self.step_count = 0
         self.batch_norm = batch_norm
-        output_layer = False
+        first_layer = True
         
         self.beta1 = beta[0]
         self.beta2 = beta[1]
  
         for i in range(len(layers)-1):      
-            if i == len(layers) - 2:
-                output_layer = True
-            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = output_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm if i != 0 else False)) # the last layer is the output layer, so we set its output_layer to be True, the first layer is the input layer, so we set its batch_norm to be False
+            if i > 0 :
+                first_layer = False
+            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = first_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm if i != 0 else False)) # the last layer is the output layer, so we set its output_layer to be True, the first layer is the input layer, so we set its batch_norm to be False
 
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
     # you can try other loss, such as cross entropy.
@@ -75,7 +75,8 @@ class MLP:
         number_of_sample = y.shape[0]
         loss = - np.nansum(y * np.log(y_hat + 1e-30))
         loss = loss / number_of_sample
-        
+        # print("After scaling loss", loss)
+        # print("Original loss", loss)
         if isTraining == False:
             return loss, None
         
@@ -85,13 +86,10 @@ class MLP:
         return loss, delta
 
     # forward progress: pass the information through the layers and out the results of final output layer
-    def forward(self,input, isTraining = True):
+    def forward(self,input, isTraining = True,dropout_predict = False):
         # reset self.masks to empty list            
-        self.masks=[]
         for layer in self.layers:
-            output=layer.forward(input, isTraining=isTraining)
-            if isTraining == True:
-                self.masks.append(layer.obtain_mask())
+            output=layer.forward(input, isTraining=isTraining, dropout_predict=dropout_predict)
             input=output
         return output
 
@@ -99,10 +97,7 @@ class MLP:
     def backward(self,delta):
         for layerIndex in reversed(range(len(self.layers))):
             # print("layer: ", layerIndex)
-            if layerIndex == 0:
-                delta = self.layers[layerIndex].backward(delta, None)
-            else:
-                 delta = self.layers[layerIndex].backward(delta, self.masks[layerIndex-1])
+            delta = self.layers[layerIndex].backward(delta)
                 
          
 
@@ -112,7 +107,7 @@ class MLP:
         
         if method == "sgd":
             self.opt = sgd()
-        elif method == "momentum":
+        elif method == "sgd_momentum":
             self.opt= sgd_momentum()  
         elif method == "adam":
             self.opt= adam(self.beta1, self.beta2)  
@@ -135,9 +130,6 @@ class MLP:
                 layer.gamma -= lr * layer.grad_gamma
                 layer.beta -= lr * layer.grad_beta
        
-            
-    
-
         
     # define the training function
     # it will return all losses within the whole training process.
@@ -159,7 +151,9 @@ class MLP:
         train_loss_per_epochs = []
         val_loss_per_epochs = []
         train_acc_per_epochs = []
-        val_acc_per_epochs = []     
+        val_acc_per_epochs = []
+        train_f1_per_epochs = []
+        val_f1_per_epochs = []     
  
         self.optimizer_init(opt)
         num_batches = int(np.ceil(X.shape[0] / self.batch_size))
@@ -173,6 +167,7 @@ class MLP:
             current_batch_size = self.batch_size
             X,y = Data_Proprocesing.shuffle_randomly(X,y)
 
+
             for _ in range(num_batches):
                 
                 # forward pass
@@ -181,8 +176,7 @@ class MLP:
                 # backward pass
                 _, delta = self.criterion(
                     y[index:index + current_batch_size, :], y_hat, isTraining=True)
-                
-    
+           
                 self.backward(delta) 
                 
                 # update the model parameters
@@ -196,28 +190,29 @@ class MLP:
                     index += current_batch_size
                 
                 self.step_count += 1
-            
             # keep track of experiment results
             y_train_pred = self.predict(X)
-            train_loss,_ = self.criterion(
+            train_loss, _ = self.criterion(
                 y, y_train_pred, isTraining=False)
             train_loss_per_epochs.append(train_loss)
-            
-            train_acc_per_epochs.append(
-                Data_Proprocesing.accuarcy(y, y_train_pred))
+            train_acc_per_epochs.append(accuracy_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1)))
+            train_f1_per_epochs.append(f1_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1), average='macro'))
+            # train_acc_per_epochs.append(Data_Proprocesing.accuarcy(y, y_train_pred))
+
             
             y_test_pred = self.predict(self.X_test)
             val_loss, _ = self.criterion(
                 self.y_test, y_test_pred, isTraining=False)
             val_loss_per_epochs.append(val_loss)
-            val_acc_per_epochs.append(
-                Data_Proprocesing.accuarcy(self.y_test, y_test_pred))
-            
+            val_acc_per_epochs.append(accuracy_score(
+                self.y_test, np.expand_dims(np.argmax(y_test_pred, axis=1), axis=1)))
+            val_f1_per_epochs.append(f1_score(self.y_test,  np.expand_dims(np.argmax(y_test_pred, axis=1),axis=1), average='macro'))
+            #    val_acc_per_epochs.append( Data_Proprocesing.accuarcy(self.y_test, y_test_pred))
            
-            print(
-                f'Epoch {k} | ' f'train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} | ' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} | ' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |')
-     
         
+            print(
+                f'Epoch: {k:3} | ' f'itrs: {self.step_count:5} |' f' train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} | ' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} | ' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |' f' train_f1_per_epochs : {train_f1_per_epochs[-1]:.4f} |' f' val_f1_per_epochs : {val_f1_per_epochs[-1]:.4f} |')
+     
         statistic = dict()
         statistic['train_loss_per_epochs'] = train_loss_per_epochs
         statistic['val_loss_per_epochs'] = val_loss_per_epochs
@@ -233,6 +228,9 @@ class MLP:
         output = []
         for i in np.arange(x.shape[0]):
             output.append(self.forward(x[i,:], isTraining=False))
-        return np.array(output).squeeze(axis=1)
+    
+        return np.array(output).squeeze(axis=1) 
+    
+    
     
     
