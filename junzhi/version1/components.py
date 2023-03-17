@@ -153,10 +153,10 @@ class HiddenLayer(object):
             input = input * self.gamma + self.beta
         
         scale_factor = 1.0
-        if isTraining is False  and self.dropoutrate < 1.0:
-            scale_factor = 1/self.dropoutrate
-        else:
-           scale_factor = 1.0
+        # if isTraining is False  and self.dropoutrate < 1.0:
+        #     scale_factor = 1/self.dropoutrate
+        # else:
+        #    scale_factor = 1.0
                            
         lin_output = np.dot(input, self.W * scale_factor) + self.b
         self.output = (
@@ -198,7 +198,8 @@ class HiddenLayer(object):
     def dropout_forward(self, input):
         self.mask = np.random.binomial(1, self.dropoutrate, size=input.shape) 
         # self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
-        input *= self.mask
+        input *= self.mask 
+        input /= self.dropoutrate
         return input
     
     def dropout_backward(self, delta, previous_masking):
