@@ -44,12 +44,13 @@ LAYER_NEURONS = [128, 100, 50, 10]
 LAYER_ACTIVATION_FUNCS = [None, 'relu','relu', 'softmax']
 LEARNING_RATE = 0.0005
 EPOCHS = 200
-DROPOUT_PROB = 0
+DROPOUT_PROB = 0.8
+assert DROPOUT_PROB <= 1 and DROPOUT_PROB >= 0
 BATCH_SIZE = 100
 WEIGHT_DECAY = 0.01  # if WEIGHT_DECAY is None, then no weight decay is applied
 BETA = [0.9,0.999]
-SIZE = 50000    # Size of training dataset, 50000 is the full dataset
-BATCHNORM = True
+SIZE = 5000    # Size of training dataset, 50000 is the full dataset
+BATCHNORM = False
 LOSS = 'CE' # 'CE' or 'MSE'  
 OPTIMIZER = 'adam'  # 'sgd' or 'adam', 'sgd_momentum'
 # ----------------------------------------------------------------------------------   

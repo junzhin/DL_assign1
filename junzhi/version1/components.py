@@ -151,9 +151,14 @@ class HiddenLayer(object):
         elif self.batch_norm and isTraining is False:
             input = (input - self.batch_mean) / np.sqrt(self.batch_var + 1e-18)
             input = input * self.gamma + self.beta
-            
-                      
-        lin_output = np.dot(input, self.W) + self.b
+        
+        scale_factor = 1.0
+        if isTraining is False  and self.dropoutrate < 1.0:
+            scale_factor = 1/self.dropoutrate
+        else:
+           scale_factor = 1.0
+                           
+        lin_output = np.dot(input, self.W * scale_factor) + self.b
         self.output = (
           
             lin_output if self.activation is None
@@ -163,7 +168,8 @@ class HiddenLayer(object):
         if isTraining and not self.output_layer:
             self.output = self.dropout_forward(self.output)
         else:
-            self.mask = np.ones(input.shape)
+            self.mask = np.ones(self.output.shape)
+    
         return self.output
     
     def backward(self, delta, mask = None):
@@ -190,7 +196,7 @@ class HiddenLayer(object):
         return delta
     
     def dropout_forward(self, input):
-        self.mask = np.random.binomial(1, 1 - self.dropoutrate, size=input.shape) 
+        self.mask = np.random.binomial(1, self.dropoutrate, size=input.shape) 
         # self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
         input *= self.mask
         return input
