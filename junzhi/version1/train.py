@@ -9,6 +9,8 @@ from mlp import MLP
 import argparse
 import yaml
 import pandas as pd
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
  
 file_location = "../../raw_data/"
 debug = False
@@ -45,14 +47,14 @@ if debug:
 default_layer_neurons = [128, 100, 110, 100, 10]
 default_layer_activation_funcs = [None, 'leakyrelu', 'leakyrelu', 'leakyrelu', 'softmax']
 default_learning_rate = 0.0005
-default_epochs = 50
-default_dropout_prob = 0.5
+default_epochs = 20
+default_dropout_prob = 1
 assert 0 <= default_dropout_prob <= 1
-default_batch_size = 2 # if batch_size is None, then no batch is used
+default_batch_size = 1000 # if batch_size is None, then no batch is used
 default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
 default_beta = [0.9, 0.999]
-default_size = 1000 # Size of training dataset, 50000 is the full dataset
-default_batchnorm = False
+default_size = 10000 # Size of training dataset, 50000 is the full dataset
+default_batchnorm = True
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'adam' # 'sgd' or 'adam', 'sgd_momentum'
  
@@ -139,35 +141,88 @@ df_stats = pd.DataFrame.from_dict(trial1_logger)
 # Save the DataFrame as a CSV file using args.save_path location
 df_stats.to_csv(args.save_path + '/stats.csv', index=False)
 
-# plot training and validation loss
-plt.figure(figsize=(8, 6))
-plt.plot(trial1_logger['train_loss_per_epochs'], label='Training Loss')
-plt.plot(trial1_logger['val_loss_per_epochs'], label='Validation Loss')
+# # plot training and validation loss
+# plt.figure(figsize=(8, 6))
+# plt.plot(trial1_logger['train_loss_per_epochs'], label='Training Loss')
+# plt.plot(trial1_logger['val_loss_per_epochs'], label='Validation Loss')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss')
+# plt.title('Training and Validation Loss')
+# plt.legend()
+# plt.savefig(os.path.join(args.save_path, 'loss.png'), dpi=300)
+
+# # plot training and validation accuracy
+# plt.figure(figsize=(8, 6))
+# plt.plot(trial1_logger['train_acc_per_epochs'], label='Training Accuracy')
+# plt.plot(trial1_logger['val_acc_per_epochs'], label='Validation Accuracy')
+# plt.xlabel('Epochs')
+# plt.ylabel('Accuracy')
+# plt.title('Training and Validation Accuracy')
+# plt.legend()
+# plt.savefig(os.path.join(args.save_path, 'accuracy.png'), dpi=300)
+
+# # plot training and validation F1 score
+# plt.figure(figsize=(8, 6))
+# plt.plot(trial1_logger['train_f1_per_epochs'], label='Training F1 Score')
+# plt.plot(trial1_logger['val_f1_per_epochs'], label='Validation F1 Score')
+# plt.xlabel('Epochs')
+# plt.ylabel('F1 Score')
+# plt.title('Training and Validation F1 Score')
+# plt.legend()
+# plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
+
+
+sns.set(style='whitegrid', font_scale=1.2)
+
+#  plot training and validation loss
+plt.figure(figsize=(10, 6))
+sns.lineplot(
+    data=trial1_logger['train_loss_per_epochs'], label='Training Loss')
+sns.lineplot(
+    data=trial1_logger['val_loss_per_epochs'], label='Validation Loss')
 plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.title('Training and Validation Loss')
 plt.legend()
 plt.savefig(os.path.join(args.save_path, 'loss.png'), dpi=300)
 
-# plot training and validation accuracy
-plt.figure(figsize=(8, 6))
-plt.plot(trial1_logger['train_acc_per_epochs'], label='Training Accuracy')
-plt.plot(trial1_logger['val_acc_per_epochs'], label='Validation Accuracy')
+#  plot training and validation accuracy
+plt.figure(figsize=(10, 6))
+sns.lineplot(
+    data=trial1_logger['train_acc_per_epochs'], label='Training Accuracy')
+sns.lineplot(
+    data=trial1_logger['val_acc_per_epochs'], label='Validation Accuracy')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.title('Training and Validation Accuracy')
 plt.legend()
 plt.savefig(os.path.join(args.save_path, 'accuracy.png'), dpi=300)
 
-# plot training and validation F1 score
-plt.figure(figsize=(8, 6))
-plt.plot(trial1_logger['train_f1_per_epochs'], label='Training F1 Score')
-plt.plot(trial1_logger['val_f1_per_epochs'], label='Validation F1 Score')
+#   plot training and validation F1 score
+plt.figure(figsize=(10, 6))
+sns.lineplot(
+    data=trial1_logger['train_f1_per_epochs'], label='Training F1 Score')
+sns.lineplot(data=trial1_logger['val_f1_per_epochs'],
+             label='Validation F1 Score')
 plt.xlabel('Epochs')
 plt.ylabel('F1 Score')
 plt.title('Training and Validation F1 Score')
 plt.legend()
 plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
+
+ 
+y_pred = nn.predict(X_test)   
+y_pred_decoded = Data_Proprocesing.decode_one_encoding(y_pred) 
+
+cm = confusion_matrix(y_test, y_pred_decoded)  
+cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(cm_norm, annot=True, cmap='YlGnBu', fmt='.2%', cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.savefig(os.path.join(args.save_path, 'confusion_matrix.png'), dpi=300)
 
 print(f"============= Results plotting finished =============")
 
