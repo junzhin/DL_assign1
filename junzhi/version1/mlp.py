@@ -68,9 +68,9 @@ class MLP:
     
     def criterion_CE(self, y, y_hat, isTraining = True):
         y = Data_Proprocesing.one_encoding(y)
-        
-        
+
         assert y.shape == y_hat.shape
+  
         
         number_of_sample = y.shape[0]
         loss = - np.nansum(y * np.log(y_hat + 1e-30))
