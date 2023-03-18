@@ -218,6 +218,8 @@ class MLP:
         statistic['val_loss_per_epochs'] = val_loss_per_epochs
         statistic['train_acc_per_epochs'] = train_acc_per_epochs
         statistic['val_acc_per_epochs'] = val_acc_per_epochs  
+        statistic['train_f1_per_epochs'] = train_f1_per_epochs
+        statistic['val_f1_per_epochs'] = val_f1_per_epochs
         
         return  statistic
 

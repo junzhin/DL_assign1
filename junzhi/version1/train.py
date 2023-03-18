@@ -8,7 +8,8 @@ from util import Data_Proprocesing
 from mlp import MLP
 import argparse
 import yaml
-
+import pandas as pd
+ 
 file_location = "../../raw_data/"
 debug = False
 # ----------------------------------------------------------------------------------   
@@ -44,14 +45,14 @@ if debug:
 default_layer_neurons = [128, 100, 110, 100, 10]
 default_layer_activation_funcs = [None, 'leakyrelu', 'leakyrelu', 'leakyrelu', 'softmax']
 default_learning_rate = 0.0005
-default_epochs = 1
-default_dropout_prob = 0.8
+default_epochs = 50
+default_dropout_prob = 0.5
 assert 0 <= default_dropout_prob <= 1
 default_batch_size = 2 # if batch_size is None, then no batch is used
 default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
 default_beta = [0.9, 0.999]
-default_size = 100 # Size of training dataset, 50000 is the full dataset
-default_batchnorm = True
+default_size = 1000 # Size of training dataset, 50000 is the full dataset
+default_batchnorm = False
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'adam' # 'sgd' or 'adam', 'sgd_momentum'
  
@@ -82,7 +83,7 @@ parser.add_argument('--loss', type=str, default=default_loss,
                     help='Loss function for the optimizer (CE or MSE)')
 parser.add_argument('--optimizer', type=str, default='adam',
                     help='Optimizer to use (sgd, adam, or sgd_momentum)')
-parser.add_argument('--save_path', type=str, default='./results/')
+parser.add_argument('--save_path', type=str, default='./results/debug/')
 
 args = parser.parse_args()
 if not os.path.exists(args.save_path):
@@ -106,7 +107,9 @@ args_dict = vars(args)
 with open(os.path.join(args.save_path,'hyperparameters.yaml'), 'w') as f:
     yaml.dump(args_dict, f)
 
- 
+for index, each in enumerate(args.activation_funcs):
+    if each == "None":
+        args.activation_funcs[index] = None 
 
 print("-----------------------------------")
 # ----------------------------------------------------------------------------------   
@@ -129,3 +132,43 @@ trial1_logger = nn.fit(X_train[:args.size], y_train[:args.size],
 t1 = time.time()
 print(f"============= Model Build Done =============")
 print(f"Time taken to build model: {round(t1 - t0, 4)} seconds with {args.epochs} Epochs of training.")
+
+print(f"============= Results plotting =============")
+# save a csv file
+df_stats = pd.DataFrame.from_dict(trial1_logger)
+# Save the DataFrame as a CSV file using args.save_path location
+df_stats.to_csv(args.save_path + '/stats.csv', index=False)
+
+# plot training and validation loss
+plt.figure(figsize=(8, 6))
+plt.plot(trial1_logger['train_loss_per_epochs'], label='Training Loss')
+plt.plot(trial1_logger['val_loss_per_epochs'], label='Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Training and Validation Loss')
+plt.legend()
+plt.savefig(os.path.join(args.save_path, 'loss.png'), dpi=300)
+
+# plot training and validation accuracy
+plt.figure(figsize=(8, 6))
+plt.plot(trial1_logger['train_acc_per_epochs'], label='Training Accuracy')
+plt.plot(trial1_logger['val_acc_per_epochs'], label='Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.legend()
+plt.savefig(os.path.join(args.save_path, 'accuracy.png'), dpi=300)
+
+# plot training and validation F1 score
+plt.figure(figsize=(8, 6))
+plt.plot(trial1_logger['train_f1_per_epochs'], label='Training F1 Score')
+plt.plot(trial1_logger['val_f1_per_epochs'], label='Validation F1 Score')
+plt.xlabel('Epochs')
+plt.ylabel('F1 Score')
+plt.title('Training and Validation F1 Score')
+plt.legend()
+plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
+
+print(f"============= Results plotting finished =============")
+
+ 
