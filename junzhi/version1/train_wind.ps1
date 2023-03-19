@@ -1,9 +1,10 @@
+# This is a PowerShell script, so you need to execute it in PowerShell
 # Command line arguments for train.py
 $study_subject = "lr" # the focus of this experiment 需要更改的参数
 $layer_neurons = @(128, 100, 110, 100, 10)
 $activation_funcs = @('None','leakyrelu', 'leakyrelu', 'leakyrelu', 'softmax')
 # $learning_rate = 0.001
-$learning_rates = @(0.1, 0.01, 0.001)
+$learning_rates = @(0.1, 0.01, 0.001) # 需要更改的参数
 $epochs = 50
 $dropout_prob = 1
 $batch_size = 512
@@ -13,7 +14,6 @@ $size = 5000
 $batch_norm = $true
 $loss = "CE"
 $optimizer = "adam"
-
 
 $run = 0
 # 修改成对应要探索的维度的名字
@@ -33,4 +33,3 @@ foreach ($learning_rate in $learning_rates) {
     --optimizer $optimizer --save_path $save_path > "${save_path}log.txt"
     Write-Output "$run run is finished!"
 }
-

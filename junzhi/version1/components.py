@@ -2,57 +2,45 @@ import numpy as np
 from typing import *
 
 class Activation(object):
-    def __tanh(self, x):
+    def __tanh(self, x: np.ndarray) -> float:
         return np.tanh(x)
 
-    def __tanh_deriv(self, a):
+    def __tanh_deriv(self, a: np.ndarray) -> np.ndarray:
         # a = np.tanh(x)
         return 1.0 - a**2
 
-    def __logistic(self, x):
+    def __logistic(self, x: np.ndarray) -> float:
         return 1.0 / (1.0 + np.exp(-x))
 
-    def __logistic_deriv(self, a):
+    def __logistic_deriv(self, a: np.ndarray) -> float:
     
         return a * (1 - a)
     
-    def __relu(self,a):
+    def __relu(self,a: np.ndarray) -> np.ndarray:
         return np.maximum(0,a)
   
-    def __relu_deriv(self,a):
+    def __relu_deriv(self,a: np.ndarray) -> np.ndarray:
         return np.where(a <= 0, 0, 1)
  
         
-    def __leakyrelu(self,a):
+    def __leakyrelu(self,a: np.ndarray) -> float:
         return np.maximum(self.delta * a, a)
     
-    def __leakyrelu_deriv(self, a):
+    def __leakyrelu_deriv(self, a: np.ndarray) -> np.ndarray:
         return np.where(a <= 0, self.delta, 1)
     
-    def __softmax(self, a):
+    def __softmax(self, a: np.ndarray) -> np.ndarray:
         shift = a - np.max(a, axis=1, keepdims=True)
-
-        # if self.indicator  is False:
-        #     print("a", a.shape)
-        #     print('a : ', a )
-        #     print('np.max(a, axis=1, keepdims=True): ', np.max(a, axis=1, keepdims=True))
-        #     print('shift: ', shift.shape)
-        #     print("shift")
-        #     print(shift)
-        #     print(np.exp(shift) / np.sum(np.exp(shift)))
-        #     print(' np.sum(np.exp(shift)): ',  np.sum(np.exp(shift), axis=1, keepdims=True))
-        #     self.indicator = True
-
         return np.exp(shift) / np.sum(np.exp(shift), axis=1, keepdims=True)
     
     # 这里不一定用的到， 其中对于softmax 的导数， 一般用的是交叉熵的导数 结合使用
-    def __softmax_deriv(self,a):
+    def __softmax_deriv(self, a: np.ndarray) -> np.ndarray:
         a = a.reshape((-1,1))
         jac = np.diagflat(a) - np.dot(a, a.T)
         return jac
         
  
-    def __init__(self, activation='tanh', delta  = 0.01):
+    def __init__(self, activation: str='tanh', delta: float = 0.01):
         self.indicator = False
         if activation == 'logistic':
             self.f = self.__logistic
@@ -73,7 +61,7 @@ class Activation(object):
             self.f_deriv = self.__softmax_deriv
                  
 class HiddenLayer(object):
-    def __init__(self, n_in, n_out,
+    def __init__(self, n_in: int, n_out: int,
                  activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0, weight_decay = None, batch_norm = False):
         """
         Typical hidden layer of a MLP: units are fully-connected and have
@@ -114,12 +102,16 @@ class HiddenLayer(object):
             self.activation_deriv = Activation(activation_last_layer).f_deriv
 
         # we randomly assign small values for the weights as the initiallization
-        self.W = np.random.uniform(
+        
+        if self.activation == 'relu' or self.activation == 'leakyrelu':
+            self.W = np.random.uniform(low=-np.sqrt(6. / n_in), high=np.sqrt(6. / n_in), size=(n_in, n_out))
+        else:            
+            self.W = np.random.uniform(
             low=-np.sqrt(6. / (n_in + n_out)),
             high=np.sqrt(6. / (n_in + n_out)),
             size=(n_in, n_out)
-        )
-     
+            )
+        
 
         # we set the size of bias as the size of output dimension
         self.b = np.zeros((1,n_out),)
@@ -176,7 +168,7 @@ class HiddenLayer(object):
         return self.output
     
     
-    def backward(self, delta):
+    def backward(self, delta: np.ndarray) -> None:
         self.grad_W = np.atleast_2d(self.input).T.dot(
             np.atleast_2d(delta))
         self.grad_b = np.average(delta, axis=0) 
@@ -188,17 +180,14 @@ class HiddenLayer(object):
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
             delta = self.dropout_backward(delta)
             if self.batch_norm:
-                # print("entering batch norm")
-                # print("delta.shape",  delta.shape)
-                # print("self.input_normalized", self.input_normalized.shape)
-                # print("entering batch norm")
+            
                 self.grad_gamma = np.sum(
                     delta  * self.input_normalized, axis=0)
                 self.grad_beta = np.sum(delta, axis=0)
                 
         return delta
     
-    def dropout_forward(self, input):
+    def dropout_forward(self, input: np.ndarray) -> np.ndarray:
         self.mask = np.random.binomial(1, self.dropoutrate, size=input.shape) 
         # self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
         input = input * self.mask
@@ -207,7 +196,7 @@ class HiddenLayer(object):
         # input = input * self.mask/self.dropoutrate
         return input
     
-    def dropout_backward(self, delta):
+    def dropout_backward(self, delta: np.ndarray) -> np.ndarray:
         assert self.mask.shape == delta.shape
         return delta * self.mask 
     

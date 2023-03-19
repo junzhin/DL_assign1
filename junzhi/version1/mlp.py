@@ -8,7 +8,7 @@ from sklearn.metrics import *
 
 class MLP:
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
-    def __init__(self, X_test, y_test,layers: List[int], activation: List[Optional[str]], weight_decay = 0.01, loss = "MSE", batch_size = 1, dropoutRate = 0.5, beta:List[float] = [0.9,0.999],batch_norm:bool= False):
+    def __init__(self, X_test: np.ndarray, y_test: np.ndarray, layers: List[int], activation: List[Optional[str]], weight_decay: float = 0.01, loss: str = "MSE", batch_size: int = 1, dropoutRate: float = 0.5, beta: List[float] = [0.9,0.999], batch_norm: bool = False):
         """
         :param layers: A list containing the number of units in each layer.
         Should be at least two values
@@ -42,7 +42,7 @@ class MLP:
     # define the objection/loss function, we use mean sqaure error (MSE) as the loss
     # you can try other loss, such as cross entropy.
     # when you try to change the loss, you should also consider the backward formula for the new loss as well!
-    def criterion(self,y,y_hat, isTraining = True):
+    def criterion(self, y: np.ndarray, y_hat: np.ndarray, isTraining: bool = True):
         if self.loss == "MSE":
             return self.criterion_MSE(y,y_hat, isTraining)
         elif self.loss == "CE":
@@ -50,7 +50,7 @@ class MLP:
         
         
            
-    def criterion_MSE(self,y,y_hat, isTraining = True):
+    def criterion_MSE(self, y: np.ndarray, y_hat: np.ndarray, isTraining: bool = True):
             activation_deriv=Activation(self.activation[-1]).f_deriv
             # MSE
             y = Data_Proprocesing.one_encoding(y)
@@ -66,7 +66,7 @@ class MLP:
             return np.sum(loss)/y.shape[0], delta
         
     
-    def criterion_CE(self, y, y_hat, isTraining = True):
+    def criterion_CE(self, y:  np.ndarray, y_hat:  np.ndarray, isTraining: bool = True):
         y = Data_Proprocesing.one_encoding(y)
 
         assert y.shape == y_hat.shape
@@ -86,7 +86,7 @@ class MLP:
         return loss, delta
 
     # forward progress: pass the information through the layers and out the results of final output layer
-    def forward(self,input, isTraining = True,dropout_predict = False):
+    def forward(self, input:  np.ndarray, isTraining: bool = True, dropout_predict: bool = False):
         # reset self.masks to empty list            
         for layer in self.layers:
             output=layer.forward(input, isTraining=isTraining, dropout_predict=dropout_predict)
@@ -94,7 +94,7 @@ class MLP:
         return output
 
     # backward progress  
-    def backward(self,delta):
+    def backward(self, delta: np.ndarray):
         for layerIndex in reversed(range(len(self.layers))):
             # print("layer: ", layerIndex)
             delta = self.layers[layerIndex].backward(delta)
@@ -103,7 +103,7 @@ class MLP:
 
     # update the network weights after backward.
     # make sure you run the backward function before the update function! 
-    def optimizer_init(self, method):
+    def optimizer_init(self, method: str) -> None:
         
         if method == "sgd":
             self.opt = sgd()
@@ -112,7 +112,7 @@ class MLP:
         elif method == "adam":
             self.opt= adam(self.beta1, self.beta2)  
         
-    def update(self,lr, step_count):         
+    def update(self,lr: float, step_count: int)->None:         
         if step_count == 1:
             self.opt.reset()
             
@@ -133,7 +133,7 @@ class MLP:
         
     # define the training function
     # it will return all losses within the whole training process.
-    def fit(self,X,y,learning_rate=0.1, epochs=100, opt = 'sgd'):
+    def fit(self,X:np.ndarray,y:np.ndarray,learning_rate:float=0.1, epochs:int=100, opt: str ='sgd'):
         """
         Online learning.
         :param X: Input data or features
@@ -225,7 +225,7 @@ class MLP:
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
-    def predict(self, x):
+    def predict(self, x: np.ndarray) -> np.ndarray:
         x = np.array(x)
         output = []
         for i in np.arange(x.shape[0]):
