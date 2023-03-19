@@ -1,4 +1,5 @@
- 
+
+ # Import libraries
 import numpy as np
 import pandas as pd
 import os
@@ -26,6 +27,8 @@ if debug:
     print('X_test: ', X_test.shape)
     print('y_test: ', y_test.shape)
     print(y_train[:10,:])
+    
+    
 
 # ----------------------------------------------------------------------------------   
 # Preprocess data
@@ -40,26 +43,30 @@ if debug:
     print(y_shuffle)
     print(Data_Proprocesing.decode_one_encoding(y_shuffle))
     print("--"*30)
- # ----------------------------------------------------------------------------------
+    
+    
+# ----------------------------------------------------------------------------------
 #Set default hyperparameters
 # default_layer_neurons = [128, 90, 80, 50, 10]
-
-default_layer_neurons = [128, 100, 110, 100, 10]
-default_layer_activation_funcs = [None, 'leakyrelu', 'leakyrelu', 'leakyrelu', 'softmax']
-default_learning_rate = 0.0005
-default_epochs = 20
-default_dropout_prob = 1
-assert 0 <= default_dropout_prob <= 1
+default_layer_neurons = [128, 100, 110, 100, 10] # specify the number of layers and neurons in each layer
+default_layer_activation_funcs = [None, 'leakyrelu', 'leakyrelu', 'leakyrelu', 'softmax'] # None means linear,leakyrelu,relu,softmax,logistic
+default_learning_rate = 0.0005 # learning rate for the optimizer
+default_epochs = 20 # number of training epochs
+default_dropout_prob = 1 # dropout probability that perserve the neuron
+assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
 default_batch_size = 1000 # if batch_size is None, then no batch is used
 default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
-default_beta = [0.9, 0.999]
+default_beta = [0.9, 0.999] # beta values for the adam optimizer
 default_size = 10000 # Size of training dataset, 50000 is the full dataset
-default_batchnorm = True
+default_batchnorm = True # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'adam' # 'sgd' or 'adam', 'sgd_momentum'
- 
+
+
+# ----------------------------------------------------------------------------------
+# Parse arguments
 parser = argparse.ArgumentParser(
-    description='Multi-layer neural network arguments')
+    description='Multi-layer neural network arguments') 
 
 parser.add_argument('--layer_neurons', nargs='+', type=int, default=default_layer_neurons,
                     help='List of integers specifying number of neurons in each layer')
@@ -88,6 +95,10 @@ parser.add_argument('--optimizer', type=str, default='adam',
 parser.add_argument('--save_path', type=str, default='./results/debug/')
 
 args = parser.parse_args()
+
+
+# ----------------------------------------------------------------------------------
+# Create the directory to save the results
 if not os.path.exists(args.save_path):
     os.makedirs(args.save_path)
     
@@ -109,11 +120,14 @@ args_dict = vars(args)
 with open(os.path.join(args.save_path,'hyperparameters.yaml'), 'w') as f:
     yaml.dump(args_dict, f)
 
+# Save the dictionary to a yaml file
 for index, each in enumerate(args.activation_funcs):
     if each == "None":
         args.activation_funcs[index] = None 
 
 print("-----------------------------------")
+
+
 # ----------------------------------------------------------------------------------   
 # Instantiate the multi-layer neural network
 assert len(args.layer_neurons) == len(args.activation_funcs)
@@ -131,48 +145,21 @@ trial1_logger = nn.fit(X_train[:args.size], y_train[:args.size],
                         learning_rate=args.learning_rate, epochs=args.epochs,
                         opt=args.optimizer)
 
-t1 = time.time()
+t1 = time.time() # end time
 print(f"============= Model Build Done =============")
 print(f"Time taken to build model: {round(t1 - t0, 4)} seconds with {args.epochs} Epochs of training.")
 
+
+# ----------------------------------------------------------------------------------
+# Plot the results
 print(f"============= Results plotting =============")
 # save a csv file
 df_stats = pd.DataFrame.from_dict(trial1_logger)
 # Save the DataFrame as a CSV file using args.save_path location
 df_stats.to_csv(args.save_path + '/stats.csv', index=False)
 
-# # plot training and validation loss
-# plt.figure(figsize=(8, 6))
-# plt.plot(trial1_logger['train_loss_per_epochs'], label='Training Loss')
-# plt.plot(trial1_logger['val_loss_per_epochs'], label='Validation Loss')
-# plt.xlabel('Epochs')
-# plt.ylabel('Loss')
-# plt.title('Training and Validation Loss')
-# plt.legend()
-# plt.savefig(os.path.join(args.save_path, 'loss.png'), dpi=300)
 
-# # plot training and validation accuracy
-# plt.figure(figsize=(8, 6))
-# plt.plot(trial1_logger['train_acc_per_epochs'], label='Training Accuracy')
-# plt.plot(trial1_logger['val_acc_per_epochs'], label='Validation Accuracy')
-# plt.xlabel('Epochs')
-# plt.ylabel('Accuracy')
-# plt.title('Training and Validation Accuracy')
-# plt.legend()
-# plt.savefig(os.path.join(args.save_path, 'accuracy.png'), dpi=300)
-
-# # plot training and validation F1 score
-# plt.figure(figsize=(8, 6))
-# plt.plot(trial1_logger['train_f1_per_epochs'], label='Training F1 Score')
-# plt.plot(trial1_logger['val_f1_per_epochs'], label='Validation F1 Score')
-# plt.xlabel('Epochs')
-# plt.ylabel('F1 Score')
-# plt.title('Training and Validation F1 Score')
-# plt.legend()
-# plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
-
-
-sns.set(style='whitegrid', font_scale=1.2)
+sns.set(style='whitegrid', font_scale=1.2) # set the style of the plots
 
 #  plot training and validation loss
 plt.figure(figsize=(10, 6))
@@ -210,7 +197,7 @@ plt.title('Training and Validation F1 Score')
 plt.legend()
 plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
 
- 
+ #   plot training and validation F1 score
 y_pred = nn.predict(X_test)   
 y_pred_decoded = Data_Proprocesing.decode_one_encoding(y_pred) 
 
@@ -223,6 +210,7 @@ plt.xlabel('Predicted')
 plt.ylabel('True')
 plt.title('Confusion Matrix')
 plt.savefig(os.path.join(args.save_path, 'confusion_matrix.png'), dpi=300)
+
 
 print(f"============= Results plotting finished =============")
 
