@@ -60,7 +60,7 @@ default_beta = [0.9, 0.999] # beta values for the adam optimizer
 default_size = 10000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = True # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
-default_optimizer = 'adam' # 'sgd' or 'adam', 'sgd_momentum'
+default_optimizer = 'adam' # 'sgd' or 'adam', 'sgd_momentum' or 
 
 
 # ----------------------------------------------------------------------------------

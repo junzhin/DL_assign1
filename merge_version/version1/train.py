@@ -28,8 +28,6 @@ if debug:
     print('y_test: ', y_test.shape)
     print(y_train[:10,:])
     
-    
-
 # ----------------------------------------------------------------------------------   
 # Preprocess data
 X_train = Data_Proprocesing.standardize(X_train)
@@ -51,7 +49,7 @@ if debug:
 default_layer_neurons = [128, 100, 110, 100, 10] # specify the number of layers and neurons in each layer
 default_layer_activation_funcs = [None, 'leakyrelu', 'leakyrelu', 'leakyrelu', 'softmax'] # None means linear,leakyrelu,relu,softmax,logistic
 default_learning_rate = 0.0005 # learning rate for the optimizer
-default_epochs = 20 # number of training epochs
+default_epochs = 200 # number of training epochs
 default_dropout_prob = 1 # dropout probability that perserve the neuron
 assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
 default_batch_size = 1000 # if batch_size is None, then no batch is used
@@ -60,7 +58,7 @@ default_beta = [0.9, 0.999] # beta values for the adam optimizer
 default_size = 10000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = True # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
-default_optimizer = 'adam' # 'sgd' or 'adam', 'sgd_momentum'
+default_optimizer = 'rmsprop' # 'sgd' or 'adam', 'sgd_momentum'
 
 
 # ----------------------------------------------------------------------------------

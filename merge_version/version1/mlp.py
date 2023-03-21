@@ -111,6 +111,8 @@ class MLP:
             self.opt= sgd_momentum()  
         elif method == "adam":
             self.opt= adam(self.beta1, self.beta2)  
+        elif method == "rmsprop":
+            self.opt == RMSprop()
         
     def update(self,lr: float, step_count: int)->None:         
         if step_count == 1:
