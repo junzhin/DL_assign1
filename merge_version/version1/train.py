@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from util import Data_Proprocesing
+
 debug = False
 
 #----------------------------------------------------------------------------------
@@ -23,13 +24,13 @@ default_layer_neurons = [128, 150, 100, 10]
 # None means linear,leakyrelu,relu,softmax,logistic
 default_layer_activation_funcs = ['None', 'relu', 'relu', 'softmax']
 default_learning_rate = 0.001 # learning rate for the optimizer
-default_epochs = 25 # number of training epochs
+default_epochs = 2 # number of training epochs
 default_dropout_prob = 1 # dropout probability that perserve the neuron
 assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
-default_batch_size = 512 # if batch_size is None, then no batch is used
+default_batch_size = 1  # if batch_size is None, then no batch is used
 default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
 default_beta = [0.9, 0.999] # beta values for the adam optimizer
-default_size = 1000 # Size of training dataset, 50000 is the full dataset
+default_size = 50000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = False # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'sgd_momentum'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
@@ -70,10 +71,13 @@ parser.add_argument('--file_location', type=str, default=default_file_location)
 
 args = parser.parse_args()
 
-if args.batch_norm == "False":
-    args.batch_norm = False
-else:
-    args.batch_norm = True
+
+# This means that the default batch normalization is not used, there is a argument being passed to this args.batch_norm
+if isinstance(args.batch_norm, str):
+    if args.batch_norm == "False":
+        args.batch_norm = False
+    else:
+        args.batch_norm = True
 
 # ----------------------------------------------------------------------------------   
 # Load datasets
@@ -205,31 +209,6 @@ plt.title('Training and Validation F1 Score')
 plt.legend()
 plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
 
-# #   plot training and validation Recall score
-# plt.figure(figsize=(10, 6))
-# sns.lineplot(
-#     data=trial1_logger['train_recall_per_epochs'], label='Training Recall Score')
-# sns.lineplot(data=trial1_logger['val_recall_per_epochs'],
-#              label='Validation Recall Score')
-# plt.xlabel('Epochs')
-# plt.ylabel('Recall Score')
-# plt.title('Training and Validation Recall Score')
-# plt.legend()
-# plt.savefig(os.path.join(args.save_path, 'recall_score.png'), dpi=300)
- 
-# # plot training and validation Precision score
-# plt.figure(figsize=(10, 6))
-# sns.lineplot(
-#     data=trial1_logger['train_precision_per_epochs'], label='Training Precision Score')
-# sns.lineplot(data=trial1_logger['val_precision_per_epochs'],
-#              label='Validation Precision Score')
-# plt.xlabel('Epochs')
-# plt.ylabel('Recall Score')
-# plt.title('Training and Validation Precision Score')
-# plt.legend()
-# plt.savefig(os.path.join(args.save_path, 'precision_score.png'), dpi=300)
- 
- 
  
 # heatmap of confusion matrixss
 y_pred = nn.predict(X_test)   

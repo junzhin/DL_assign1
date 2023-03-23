@@ -122,8 +122,7 @@ class HiddenLayer(object):
         self.v_W = np.zeros_like(self.grad_W)
         self.v_b = np.zeros_like(self.grad_b)
 
-    # the forward and backward progress (in the hidden layer level) for each training epoch
-    # please learn the week2 lec contents carefully to understand these codes.
+
     
     def forward(self, input: np.ndarray, isTraining: bool = True,dropout_predict = False) -> np.ndarray:
         '''

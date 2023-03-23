@@ -4,8 +4,7 @@ from typing import *
 from util import *
 from optimizer import *
 from sklearn.metrics import *
-
-
+from tqdm import tqdm
 class MLP:
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
     def __init__(self, X_test: np.ndarray, y_test: np.ndarray, layers: List[int], activation: List[Optional[str]], weight_decay: float = 0.01, loss: str = "MSE", batch_size: int = 1, dropoutRate: float = 0.5, beta: List[float] = [0.9,0.999], batch_norm: bool = False):
@@ -70,14 +69,14 @@ class MLP:
         y = Data_Proprocesing.one_encoding(y)
         # print("y: ",y.shape)
         # print("y_hat", y_hat.shape)
+        # print("After scaling loss", loss)
+       
 
         assert y.shape == y_hat.shape
-  
-        
+
         number_of_sample = y.shape[0]
         loss = - np.nansum(y * np.log(y_hat + 1e-30))
         loss = loss / number_of_sample
-        # print("After scaling loss", loss)
         # print("Original loss", loss)
         if isTraining == False:
             return loss, None
@@ -169,19 +168,21 @@ class MLP:
         for k in range(epochs):
             
             
-            index = 1
+            index = 0
             current_batch_size = self.batch_size
             X,y = Data_Proprocesing.shuffle_randomly(X,y)
 
 
-            for batch_indx in range(num_batches):
+            for batch_indx in tqdm(range(num_batches)):
             
                 # forward pass
                 y_hat = self.forward(X[index: index + current_batch_size,])
                 
+                
                 # backward pass
-                _, delta = self.criterion(
+                loss, delta = self.criterion(
                     y[index:index + current_batch_size, :], y_hat, isTraining=True)
+                
            
                 self.backward(delta) 
                 
@@ -193,11 +194,7 @@ class MLP:
                 index += current_batch_size
                 if index + self.batch_size > X.shape[0]:
                     current_batch_size = X.shape[0] - index
-                                    
-                # break the loop if all the data is processed,this is a safety check and special case with batch size = 1
-                if index >= X.shape[0]:
-                    break 
-                
+                                
                 
                 
                 self.step_count += 1
@@ -205,6 +202,7 @@ class MLP:
             y_train_pred = self.predict(X)
             train_loss, _ = self.criterion(
                 y, y_train_pred, isTraining=False)
+            print('train_loss: ', train_loss)
             train_loss_per_epochs.append(train_loss)
             train_acc_per_epochs.append(accuracy_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1)))
             train_f1_per_epochs.append(f1_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1), average='macro'))
