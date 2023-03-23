@@ -32,3 +32,13 @@ class Data_Proprocesing:
     def accuarcy( y_true: np.ndarray, y_pred:np.ndarray):
         y_pred = np.expand_dims(np.argmax(y_pred, axis=1),axis=1)
         return np.sum(y_true == y_pred) / len(y_true)
+    
+    def recall_precision_from_confusion_matrix( confusion_matrix: np.ndarray):
+        tp = np.diag(confusion_matrix)
+        fp = np.sum(confusion_matrix, axis=0) - tp
+        fn = np.sum(confusion_matrix, axis=1) - tp
+        
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        
+        return recall, precision

@@ -157,7 +157,9 @@ class MLP:
         train_acc_per_epochs = []
         val_acc_per_epochs = []
         train_f1_per_epochs = []
-        val_f1_per_epochs = []     
+        val_f1_per_epochs = []
+
+     
  
         self.optimizer_init(opt)
         num_batches = int(np.ceil(X.shape[0] / self.batch_size))
@@ -206,8 +208,6 @@ class MLP:
             train_loss_per_epochs.append(train_loss)
             train_acc_per_epochs.append(accuracy_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1)))
             train_f1_per_epochs.append(f1_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1), average='macro'))
-            # train_acc_per_epochs.append(Data_Proprocesing.accuarcy(y, y_train_pred))
-
             
             y_test_pred = self.predict(self.X_test)
             val_loss, _ = self.criterion(
@@ -215,13 +215,18 @@ class MLP:
             val_loss_per_epochs.append(val_loss)
             val_acc_per_epochs.append(accuracy_score(
                 self.y_test, np.expand_dims(np.argmax(y_test_pred, axis=1), axis=1)))
-            val_f1_per_epochs.append(f1_score(self.y_test,  np.expand_dims(np.argmax(y_test_pred, axis=1),axis=1), average='macro'))
-            #    val_acc_per_epochs.append( Data_Proprocesing.accuarcy(self.y_test, y_test_pred))
-           
+            val_f1_per_epochs.append(f1_score(self.y_test,  np.expand_dims(np.argmax(y_test_pred, axis=1),axis=1), average='macro'))    
         
             print(
-                f'Epoch: {k:3} | ' f'itrs: {self.step_count:5} |' f' train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} | ' f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} | ' f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |' f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |' f' train_f1_per_epochs : {train_f1_per_epochs[-1]:.4f} |' f' val_f1_per_epochs : {val_f1_per_epochs[-1]:.4f} |')
-     
+                f'Epoch: {k:3} | ' f'itrs: {self.step_count:5} |'
+                f' train_loss_per_epochs : {train_loss_per_epochs[-1]:.4f} | '
+                f' train_acc_per_epochs : {train_acc_per_epochs[-1]:.4f} | '
+                f'val_loss_per_epochs : {val_loss_per_epochs[-1]:.4f} |'
+                f' val_acc_per_epochs : {val_acc_per_epochs[-1]:.4f} |'
+                f' train_f1_per_epochs : {train_f1_per_epochs[-1]:.4f} |'
+                f' val_f1_per_epochs : {val_f1_per_epochs[-1]:.4f} |'
+            )
+
         statistic = dict()
         statistic['train_loss_per_epochs'] = train_loss_per_epochs
         statistic['val_loss_per_epochs'] = val_loss_per_epochs
@@ -229,6 +234,7 @@ class MLP:
         statistic['val_acc_per_epochs'] = val_acc_per_epochs  
         statistic['train_f1_per_epochs'] = train_f1_per_epochs
         statistic['val_f1_per_epochs'] = val_f1_per_epochs
+
         
         return  statistic
 

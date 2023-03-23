@@ -12,6 +12,7 @@ import yaml
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+from util import Data_Proprocesing
 debug = False
 
 #----------------------------------------------------------------------------------
@@ -22,13 +23,13 @@ default_layer_neurons = [128, 150, 100, 10]
 # None means linear,leakyrelu,relu,softmax,logistic
 default_layer_activation_funcs = ['None', 'relu', 'relu', 'softmax']
 default_learning_rate = 0.001 # learning rate for the optimizer
-default_epochs = 50 # number of training epochs
+default_epochs = 25 # number of training epochs
 default_dropout_prob = 1 # dropout probability that perserve the neuron
 assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
 default_batch_size = 512 # if batch_size is None, then no batch is used
 default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
 default_beta = [0.9, 0.999] # beta values for the adam optimizer
-default_size = 50000 # Size of training dataset, 50000 is the full dataset
+default_size = 1000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = False # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'sgd_momentum'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
@@ -204,12 +205,40 @@ plt.title('Training and Validation F1 Score')
 plt.legend()
 plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
 
- #   plot training and validation F1 score
+# #   plot training and validation Recall score
+# plt.figure(figsize=(10, 6))
+# sns.lineplot(
+#     data=trial1_logger['train_recall_per_epochs'], label='Training Recall Score')
+# sns.lineplot(data=trial1_logger['val_recall_per_epochs'],
+#              label='Validation Recall Score')
+# plt.xlabel('Epochs')
+# plt.ylabel('Recall Score')
+# plt.title('Training and Validation Recall Score')
+# plt.legend()
+# plt.savefig(os.path.join(args.save_path, 'recall_score.png'), dpi=300)
+ 
+# # plot training and validation Precision score
+# plt.figure(figsize=(10, 6))
+# sns.lineplot(
+#     data=trial1_logger['train_precision_per_epochs'], label='Training Precision Score')
+# sns.lineplot(data=trial1_logger['val_precision_per_epochs'],
+#              label='Validation Precision Score')
+# plt.xlabel('Epochs')
+# plt.ylabel('Recall Score')
+# plt.title('Training and Validation Precision Score')
+# plt.legend()
+# plt.savefig(os.path.join(args.save_path, 'precision_score.png'), dpi=300)
+ 
+ 
+ 
+# heatmap of confusion matrixss
 y_pred = nn.predict(X_test)   
 y_pred_decoded = Data_Proprocesing.decode_one_encoding(y_pred) 
 
 cm = confusion_matrix(y_test, y_pred_decoded)  
 cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+
+recall, precision = Data_Proprocesing.recall_precision_from_confusion_matrix(cm)
 
 plt.figure(figsize=(10, 8))
 sns.heatmap(cm_norm, annot=True, cmap='YlGnBu', fmt='.2%', cbar=False)
@@ -219,6 +248,36 @@ plt.title('Confusion Matrix')
 plt.savefig(os.path.join(args.save_path, 'confusion_matrix.png'), dpi=300)
 
 
+
+
+# Compute recall and precision for each class
+class_labels = [f'Class {i}' for i in range(cm.shape[0])]
+
+# Define color map for recall and precision
+colors = ['tab:red', 'tab:blue']
+
+# Create subplots
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Plot recall and precision as comparative bar chart
+bar_width = 0.4
+x_pos = np.arange(len(class_labels))
+ax.bar(x_pos - bar_width/2, recall, width=bar_width, color=colors[0], label='Recall')
+ax.bar(x_pos + bar_width/2, precision, width=bar_width, color=colors[1], label='Precision')
+
+# Set axis labels and title
+ax.set_xticks(x_pos)
+ax.set_xticklabels(class_labels, rotation=45)
+ax.set_xlabel('Class')
+ax.set_ylabel('Score')
+ax.set_title('Recall and Precision by Class')
+
+# Add legend
+ax.legend()
+
+# Adjust layout and save figure
+fig.tight_layout()
+plt.savefig(os.path.join(args.save_path, 'recall_precision.png'), dpi=300)
 print(f"============= Results plotting finished =============")
 
  
