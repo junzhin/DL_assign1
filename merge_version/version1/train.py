@@ -24,13 +24,13 @@ default_layer_neurons = [128, 150, 100, 10]
 # None means linear,leakyrelu,relu,softmax,logistic
 default_layer_activation_funcs = ['None', 'relu', 'relu', 'softmax']
 default_learning_rate = 0.001 # learning rate for the optimizer
-default_epochs = 2 # number of training epochs
+default_epochs = 5 # number of training epochs
 default_dropout_prob = 1 # dropout probability that perserve the neuron
 assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
-default_batch_size = 1  # if batch_size is None, then no batch is used
+default_batch_size = 50  # if batch_size is None, then no batch is used
 default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
 default_beta = [0.9, 0.999] # beta values for the adam optimizer
-default_size = 50000 # Size of training dataset, 50000 is the full dataset
+default_size = 10000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = False # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'sgd_momentum'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
