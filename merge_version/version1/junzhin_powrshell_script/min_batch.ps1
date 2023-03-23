@@ -5,7 +5,7 @@ $study_subject = "mini_batch" # the focus of this experiment 需要更改的参�
 
 $activation_func = @('None','relu', 'relu', 'softmax')
 $layer_neuron =  @(128, 150, 100, 10) 
-$learning_rate = 0.05
+$learning_rate = 0.005
 # $learning_rates = @(0.5,0.05,0.005) # 需要更改的参数
 $epochs = 150
 $dropout_prob = 1 # probability that perserve the neuron

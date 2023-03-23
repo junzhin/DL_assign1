@@ -202,7 +202,6 @@ class MLP:
             y_train_pred = self.predict(X)
             train_loss, _ = self.criterion(
                 y, y_train_pred, isTraining=False)
-            print('train_loss: ', train_loss)
             train_loss_per_epochs.append(train_loss)
             train_acc_per_epochs.append(accuracy_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1)))
             train_f1_per_epochs.append(f1_score(y,  np.expand_dims(np.argmax(y_train_pred, axis=1),axis=1), average='macro'))
