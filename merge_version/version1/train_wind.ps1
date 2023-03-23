@@ -11,7 +11,7 @@ $batch_size = 512
 $weight_decay = 0
 $beta = @(0.9, 0.99)
 $size = 50000
-$batch_norm = $False
+$batch_norm = "False"
 $loss = "CE"
 $optimizer = "sgd_momentum"
 
@@ -27,7 +27,7 @@ foreach ($learning_rate in $learning_rates) {
     # Run train.py with the above arguments
     Write-Output "$run run is starting!"
     Write-Output "$save_path"
-    python train.py --layer_neurons $layer_neurons --activation_funcs $activation_funcs `
+    python ../train.py --layer_neurons $layer_neurons --activation_funcs $activation_funcs `
     --learning_rate $learning_rate --epochs $epochs --dropout_prob $dropout_prob --batch_size $batch_size `
     --weight_decay $weight_decay --beta $beta --size $size --batch_norm $batch_norm --loss $loss `
     --optimizer $optimizer --save_path $save_path > "${save_path}log.txt"
