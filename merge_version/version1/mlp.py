@@ -68,6 +68,8 @@ class MLP:
     
     def criterion_CE(self, y:  np.ndarray, y_hat:  np.ndarray, isTraining: bool = True):
         y = Data_Proprocesing.one_encoding(y)
+        # print("y: ",y.shape)
+        # print("y_hat", y_hat.shape)
 
         assert y.shape == y_hat.shape
   
@@ -170,8 +172,8 @@ class MLP:
             X,y = Data_Proprocesing.shuffle_randomly(X,y)
 
 
-            for _ in range(num_batches):
-                
+            for batch_indx in range(num_batches):
+            
                 # forward pass
                 y_hat = self.forward(X[index: index + current_batch_size,])
                 
@@ -186,10 +188,15 @@ class MLP:
                 
                 
                 # correct the batch size if it is the last batch is not full
+                index += current_batch_size
                 if index + self.batch_size > X.shape[0]:
                     current_batch_size = X.shape[0] - index
-                else:
-                    index += current_batch_size
+                                    
+                # break the loop if all the data is processed,this is a safety check and special case with batch size = 1
+                if index >= X.shape[0]:
+                    break 
+                
+                
                 
                 self.step_count += 1
             # keep track of experiment results

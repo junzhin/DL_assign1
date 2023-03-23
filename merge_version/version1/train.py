@@ -12,38 +12,9 @@ import yaml
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
- 
-file_location = "../../raw_data/"
 debug = False
-# ----------------------------------------------------------------------------------   
-# Load datasets
-X_train = np.load(os.path.join(file_location,"train_data.npy"))
-y_train = np.load(os.path.join(file_location,"train_label.npy"))
-X_test = np.load(os.path.join(file_location,"test_data.npy"))
-y_test = np.load(os.path.join(file_location,"test_label.npy"))
-if debug:
-    print('X_train: ', X_train.shape)
-    print('y_train: ', y_train.shape)
-    print('X_test: ', X_test.shape)
-    print('y_test: ', y_test.shape)
-    print(y_train[:10,:])
-    
-# ----------------------------------------------------------------------------------   
-# Preprocess data
-X_train = Data_Proprocesing.standardize(X_train)
-X_test = Data_Proprocesing.standardize(X_test)
 
-if debug:
-    print("--"*30)
-    print(y_train[:10,:])
-    print(Data_Proprocesing.decode_one_encoding(y_train[:10]))
-    X_shuffle, y_shuffle = Data_Proprocesing.shuffle_randomly(X_train[:10,:], y_train[:10,:])
-    print(y_shuffle)
-    print(Data_Proprocesing.decode_one_encoding(y_shuffle))
-    print("--"*30)
-    
-    
-# ----------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
 #Set default hyperparameters
 # default_layer_neurons = [128, 90, 80, 50, 10]
 # specify the number of layers and neurons in each layer
@@ -51,7 +22,7 @@ default_layer_neurons = [128, 150, 100, 10]
 # None means linear,leakyrelu,relu,softmax,logistic
 default_layer_activation_funcs = ['None', 'relu', 'relu', 'softmax']
 default_learning_rate = 0.001 # learning rate for the optimizer
-default_epochs = 200 # number of training epochs
+default_epochs = 50 # number of training epochs
 default_dropout_prob = 1 # dropout probability that perserve the neuron
 assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
 default_batch_size = 512 # if batch_size is None, then no batch is used
@@ -61,7 +32,8 @@ default_size = 50000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = False # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'sgd_momentum'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
-
+default_save_path = './results/debug/'
+default_file_location= "../../raw_data/"
 
 # ----------------------------------------------------------------------------------
 # Parse arguments
@@ -86,15 +58,50 @@ parser.add_argument('--beta', nargs='+', type=float, default=default_beta,
                     help='List of beta values for the optimizer')
 parser.add_argument('--size', type=int, default=default_size,
                     help='Size of the training dataset. 50000 is the full dataset')
-parser.add_argument('--batch_norm', type=bool, default=default_batchnorm,
+parser.add_argument('--batch_norm', type=str, default=default_batchnorm, choices=["True", "False"],
                     help='Whether to use batch normalization or not')
 parser.add_argument('--loss', type=str, default=default_loss,
                     help='Loss function for the optimizer (CE or MSE)')
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='Optimizer to use (sgd, adam, or sgd_momentum)')
 parser.add_argument('--save_path', type=str, default='./results/debug/')
+parser.add_argument('--file_location', type=str, default=default_file_location)
 
 args = parser.parse_args()
+
+if args.batch_norm == "False":
+    args.batch_norm = False
+else:
+    args.batch_norm = True
+
+# ----------------------------------------------------------------------------------   
+# Load datasets
+X_train = np.load(os.path.join(args.file_location,"train_data.npy"))
+y_train = np.load(os.path.join(args.file_location,"train_label.npy"))
+X_test = np.load(os.path.join(args.file_location,"test_data.npy"))
+y_test = np.load(os.path.join(args.file_location, "test_label.npy"))
+if debug:
+    print('X_train: ', X_train.shape)
+    print('y_train: ', y_train.shape)
+    print('X_test: ', X_test.shape)
+    print('y_test: ', y_test.shape)
+    print(y_train[:10,:])
+    
+# ----------------------------------------------------------------------------------   
+# Preprocess data
+X_train = Data_Proprocesing.standardize(X_train)
+X_test = Data_Proprocesing.standardize(X_test)
+
+if debug:
+    print("--"*30)
+    print(y_train[:10,:])
+    print(Data_Proprocesing.decode_one_encoding(y_train[:10]))
+    X_shuffle, y_shuffle = Data_Proprocesing.shuffle_randomly(X_train[:10,:], y_train[:10,:])
+    print(y_shuffle)
+    print(Data_Proprocesing.decode_one_encoding(y_shuffle))
+    print("--"*30)
+    
+    
 
 
 # ----------------------------------------------------------------------------------
