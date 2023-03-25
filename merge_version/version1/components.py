@@ -142,7 +142,8 @@ class HiddenLayer(object):
             var = input.var(axis=0, keepdims=True)
             self.input_normalized = (input - mean) / np.sqrt(var + 1e-18)
             input = self.gamma * self.input_normalized + self.beta
-            # we implement the batch normalization in the forward progress with a moentum to keep the mean and var stable, instead of using the numpy arrays to keep all means and var for each iteration during trianing, we found that this approach is more efficient and speed up the training process significantly.
+            
+            # we implement the batch normalization in the forward progress with a momentum to keep the mean and var stable, instead of using the numpy arrays to keep all means and var for each iteration during trianing and compute the means for batch mean and standard deviation during inference, we found that this approach is more efficient and speed up the training process significantly.
             self.batch_mean = self.batch_mean * 0.9 + mean* 0.1
             self.batch_var = self.batch_var * 0.9 + var * 0.1  
         elif self.batch_norm and isTraining is False:
@@ -178,6 +179,8 @@ class HiddenLayer(object):
         if self.activation_deriv:
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
             delta = self.dropout_backward(delta)
+            
+            # retreved from https://towardsdatascience.com/implementing-batch-normalization-in-python-a044b0369567
             if self.batch_norm:
             
                 self.grad_gamma = np.sum(
