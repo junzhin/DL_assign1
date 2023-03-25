@@ -5,11 +5,13 @@ $study_subject = "mini_batch" # the focus of this experiment 需要更改的参�
 
 $activation_func = @('None','relu', 'relu', 'softmax')
 $layer_neuron =  @(128, 150, 100, 10) 
-$learning_rate = 0.005
+# $learning_rate = 0.005
+$learning_rate = 0.0005 # for mini_batch of size =  1
 # $learning_rates = @(0.5,0.05,0.005) # 需要更改的参数
 $epochs = 150
 $dropout_prob = 1 # probability that perserve the neuron
-$batch_sizes =  @(1,256, 512,1024)
+# $batch_sizes =  @(1,256, 512,1024)
+$batch_sizes =  @(1)
 $weight_decay = 0
 $beta = @(0.9, 0.99)
 $size = 50000
