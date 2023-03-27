@@ -59,6 +59,8 @@ class Activation(object):
       
             self.f = self.__softmax
             self.f_deriv = self.__softmax_deriv
+            
+            
                  
 class HiddenLayer(object):
     def __init__(self, n_in: int, n_out: int,
@@ -89,6 +91,7 @@ class HiddenLayer(object):
         self.output_layer = output_layer
         self.weight_decay = weight_decay
         self.dropout = dropout
+        self.batch_count = 0
         
         
         self.batch_norm = batch_norm
@@ -152,10 +155,12 @@ class HiddenLayer(object):
             input = self.gamma * self.input_normalized + self.beta
             
             # we implement the batch normalization in the forward progress with a momentum to keep the mean and var stable, instead of using the numpy arrays to keep all means and var for each iteration during trianing and compute the means for batch mean and standard deviation during inference, we found that this approach is more efficient and speed up the training process significantly.
+            
             self.batch_mean = self.batch_mean * 0.9 + mean* 0.1
             self.batch_var = self.batch_var * 0.9 + var * 0.1  
+            self.batch_count += 1
         elif self.batch_norm and isTraining is False:
-            input = (input - self.batch_mean) / np.sqrt(self.batch_var + 1e-18)
+            input = (input - self.batch_mean) / np.sqrt(self.batch_count/(self.batch_count - 1) * self.batch_var + 1e-18)
             input = input * self.gamma + self.beta
         
         scale_factor = 1.0
