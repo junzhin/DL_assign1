@@ -17,31 +17,33 @@ import chardet
 # root_folder = "./results"
 
 # hiddenLayers
-# subject = "hiddenLayers"
-# times = ["1.0", "2.0", "3.0"]
-# subelements = ["128_256_150_100_10", "128_256_150_100_10", "128_150_10"]
-# root_folder = "./results"
+subject = "hiddenLayers"
+times = ["1.0", "2.0", "3.0"]
+subelements = ["128_256_150_100_10", "128_150_100_10", "128_150_10"]
+root_folder = "./results"
 
  
-# ActivationFunctions
-subject = "ActivationFunctions"
-times = ["1.0", "2.0", "3.0"]
-subelements = ["None_tanh_tanh_softmax",
-               "None_relu_relu_softmax", "None_relu_relu_softmax"]
-root_folder = "./results"
+# # ActivationFunctions
+# subject = "ActivationFunctions"
+# times = ["1.0", "2.0", "3.0"]
+# subelements = ["None_tanh_tanh_softmax",
+#                "None_relu_relu_softmax", "None_leakyrelu_leakyrelu_softmax"]
+# root_folder = "./results"
 
 
 # Regular expression patterns
 pattern_epoch_149 = r"Epoch: 149 \|"
-pattern_val_loss = r"val_loss_per_epochs : (\d+\.\d+)"
+pattern_train_loss = r"train_loss_per_epochs : (\d+\.\d+)"
 pattern_train_acc = r"train_acc_per_epochs : (\d+\.\d+)"
+pattern_val_loss = r"val_loss_per_epochs : (\d+\.\d+)"
 pattern_val_acc = r"val_acc_per_epochs : (\d+\.\d+)"
 pattern_train_f1 = r"train_f1_per_epochs : (\d+\.\d+)"
 pattern_val_f1 = r"val_f1_per_epochs : (\d+\.\d+)"
 
+
 # CSV file setup
-csv_header = ["subject", "times", "subelements", "learning_rates", "val_loss_per_epochs",
-              "train_acc_per_epochs", "val_acc_per_epochs", "train_f1_per_epochs", "val_f1_per_epochs"]
+csv_header = ["subject", "times", "subelements", "train_loss_per_epochs",
+              "train_acc_per_epochs", "val_loss_per_epochs", "val_acc_per_epochs", "train_f1_per_epochs", "val_f1_per_epochs"]
 
 print("starting .... ")
 with open(f'./{subject}_output.csv', "w", newline="") as csvfile:
@@ -77,12 +79,17 @@ with open(f'./{subject}_output.csv', "w", newline="") as csvfile:
                             pattern_val_loss, epoch_149_line).group(1)
                         train_acc = re.search(
                             pattern_train_acc, epoch_149_line).group(1)
+                        train_loss = re.search(
+                            pattern_train_loss, epoch_149_line).group(1)
                         val_acc = re.search(
                             pattern_val_acc, epoch_149_line).group(1)
                         train_f1 = re.search(
                             pattern_train_f1, epoch_149_line).group(1)
                         val_f1 = re.search(
                             pattern_val_f1, epoch_149_line).group(1)
+                        val_f1 = re.search(
+                            pattern_val_f1, epoch_149_line).group(1)
+                      
 
                         csv_writer.writerow(
-                            [subject, time, subelement, f"lr_{subelement}", val_loss, train_acc, val_acc, train_f1, val_f1])
+                            [subject, time, subelement, train_loss, train_acc, val_loss, val_acc, train_f1, val_f1])
