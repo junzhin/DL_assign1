@@ -11,11 +11,16 @@ import chardet
 # root_folder = "./results"
 
 #batch size
-subject = "mini_batch"
-times = ["1.0", "2.0", "3.0"]
-subelements = ["1","256","512","1024"]
-root_folder = "./results"
+# subject = "mini_batch"
+# times = ["1.0", "2.0", "3.0"]
+# subelements = ["1","256","512","1024"]
+# root_folder = "./results"
 
+# hiddenLayers
+subject = "hiddenLayers"
+times = ["1.0", "2.0", "3.0"]
+subelements = ["128_256_150_100_10", "128_256_150_100_10", "128_150_10"]
+root_folder = "./results"
 
 
 # Regular expression patterns
