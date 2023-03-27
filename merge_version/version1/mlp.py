@@ -28,11 +28,14 @@ class MLP:
         self.activation=activation
         self.step_count = 0
         self.batch_norm = batch_norm
-        first_layer = True
         
         self.beta1 = beta[0]
         self.beta2 = beta[1]
+        self.breaking_point = 5
  
+        
+        
+        first_layer = True
         for i in range(len(layers)-1):      
             if i > 0 :
                 first_layer = False
@@ -87,10 +90,10 @@ class MLP:
         return loss, delta
 
     # forward progress: pass the information through the layers and out the results of final output layer
-    def forward(self, input:  np.ndarray, isTraining: bool = True, dropout_predict: bool = False):
+    def forward(self, input:  np.ndarray, isTraining: bool = True, dropout_predict: bool = False, early_stop: bool = False):
         # reset self.masks to empty list            
         for layer in self.layers:
-            output=layer.forward(input, isTraining=isTraining, dropout_predict=dropout_predict)
+            output=layer.forward(input, isTraining=isTraining, dropout_predict=dropout_predict, early_stopping=early_stop)
             input=output
         return output
 
@@ -136,7 +139,7 @@ class MLP:
 
     # define the training function
     # it will return all losses within the whole training process.
-    def fit(self,X:np.ndarray,y:np.ndarray,learning_rate:float=0.1, epochs:int=100, opt: str ='sgd'):
+    def fit(self,X:np.ndarray,y:np.ndarray,learning_rate:float=0.1, epochs:int=100, opt: str ='sgd', early_stop: bool = False):
         """
         Online learning.
         :param X: Input data or features
@@ -150,16 +153,17 @@ class MLP:
         
         print("X shape",X.shape)
         print("y shape",y.shape)
+        self.early_stop_mode = early_stop
         
+        early_stop_torlerance_runs = 0
         train_loss_per_epochs = []
         val_loss_per_epochs = []
         train_acc_per_epochs = []
         val_acc_per_epochs = []
         train_f1_per_epochs = []
         val_f1_per_epochs = []
-
-     
- 
+        
+        best_metric_score = np.inf
         self.optimizer_init(opt)
         num_batches = int(np.ceil(X.shape[0] / self.batch_size))
         
@@ -212,7 +216,25 @@ class MLP:
             val_loss_per_epochs.append(val_loss)
             val_acc_per_epochs.append(accuracy_score(
                 self.y_test, np.expand_dims(np.argmax(y_test_pred, axis=1), axis=1)))
-            val_f1_per_epochs.append(f1_score(self.y_test,  np.expand_dims(np.argmax(y_test_pred, axis=1),axis=1), average='macro'))    
+            val_f1_per_epochs.append(f1_score(self.y_test,  np.expand_dims(np.argmax(y_test_pred, axis=1),axis=1), average='macro')) 
+            
+            if self.early_stop_mode:
+                if val_loss < best_metric_score:
+                    best_metric_score = val_loss
+                    early_stop_torlerance_runs = 0
+                    self.early_stop_save()
+                    print(".....saving model!")
+                    
+                else:
+                    early_stop_torlerance_runs += 1
+                    
+                print('val_loss: ', val_loss)
+                print('best_val_loss: ', best_metric_score)
+                print('early_stop_torlerance_runs: ', early_stop_torlerance_runs)
+                
+                if early_stop_torlerance_runs >= self.breaking_point:
+                    break
+                   
         
             print(
                 f'Epoch: {k:3} | ' f'itrs: {self.step_count:5} |'
@@ -237,6 +259,21 @@ class MLP:
 
     # define the prediction function
     # we can use predict function to predict the results of new data, by using the well-trained network.
+    def early_stop_save(self):
+        for layerIndex in reversed(range(len(self.layers))):
+            self.layers[layerIndex].early_stopping_update()
+       
+       
+    def predict_early_stop(self, x: np.ndarray):
+        
+        assert self.early_stop_mode == True, "early_stop_mode is not activated"
+        x = np.array(x)
+        output = []
+        for i in np.arange(x.shape[0]):
+            output.append(self.forward(x[i,:], isTraining=False, early_stop=True))
+        return np.array(output).squeeze(axis=1) 
+        
+            
     def predict(self, x: np.ndarray) -> np.ndarray:
         x = np.array(x)
         output = []

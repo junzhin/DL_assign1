@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from util import Data_Proprocesing
+from sklearn.metrics import accuracy_score
 
 debug = False
 
@@ -36,6 +37,7 @@ default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'adam'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
 default_save_path = './results/debug/'
 default_file_location= "../../raw_data/"
+default_early_stopping = True
 
 # ----------------------------------------------------------------------------------
 # Parse arguments
@@ -68,6 +70,7 @@ parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='Optimizer to use (sgd, adam, or sgd_momentum)')
 parser.add_argument('--save_path', type=str, default='./results/debug/')
 parser.add_argument('--file_location', type=str, default=default_file_location)
+parser.add_argument('--early_stopping', type=bool, default=default_early_stopping)
 
 args = parser.parse_args()
 
@@ -105,9 +108,6 @@ if debug:
     print(y_shuffle)
     print(Data_Proprocesing.decode_one_encoding(y_shuffle))
     print("--"*30)
-    
-    
-
 
 # ----------------------------------------------------------------------------------
 # Create the directory to save the results
@@ -138,12 +138,10 @@ for index, each in enumerate(args.activation_funcs):
         args.activation_funcs[index] = None 
 
 print("-----------------------------------")
-
-
 # ----------------------------------------------------------------------------------   
 # Instantiate the multi-layer neural network
 assert len(args.layer_neurons) == len(args.activation_funcs)
-nn = MLP(X_test[:int(args.size*0.2)], y_test[:int(args.size*0.2)],
+nn = MLP(X_test, y_test,
          layers=args.layer_neurons, activation=args.activation_funcs,
       
          dropoutRate=args.dropout_prob, weight_decay=args.weight_decay,
@@ -155,7 +153,7 @@ t0 = time.time()
 print(f"============= Model Starts Building =============")
 trial1_logger = nn.fit(X_train[:args.size], y_train[:args.size],
                         learning_rate=args.learning_rate, epochs=args.epochs,
-                        opt=args.optimizer)
+                        opt=args.optimizer,early_stop=args.early_stopping)
 
 t1 = time.time() # end time
 print(f"============= Model Build Done =============")
@@ -211,12 +209,16 @@ plt.savefig(os.path.join(args.save_path, 'f1_score.png'), dpi=300)
 
  
 # heatmap of confusion matrixss
-y_pred = nn.predict(X_test)   
+if args.early_stopping:
+    y_pred = nn.predict_early_stop(X_test)
+else:
+    y_pred = nn.predict(X_test)   
 y_pred_decoded = Data_Proprocesing.decode_one_encoding(y_pred) 
 
 cm = confusion_matrix(y_test, y_pred_decoded)  
 cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-
+val_acc = accuracy_score(y_test,  np.expand_dims(np.argmax(y_pred, axis=1),axis=1))
+print('Final_evaluate_val_acc: ', val_acc)
 recall, precision = Data_Proprocesing.recall_precision_from_confusion_matrix(cm)
 
 plt.figure(figsize=(10, 8))

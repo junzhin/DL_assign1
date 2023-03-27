@@ -121,10 +121,18 @@ class HiddenLayer(object):
         self.grad_b = np.zeros(self.b.shape)
         self.v_W = np.zeros_like(self.grad_W)
         self.v_b = np.zeros_like(self.grad_b)
+        
+        self.best_WW = None
+        self.best_b = None
+        
+    
+    def early_stopping_update(self):
+        self.best_W = self.W
+        self.best_b = self.b
 
 
     
-    def forward(self, input: np.ndarray, isTraining: bool = True,dropout_predict = False) -> np.ndarray:
+    def forward(self, input: np.ndarray, isTraining: bool = True,dropout_predict = False, early_stopping = False) -> np.ndarray:
         '''
         :type input: numpy.array
         :param input: a symbolic tensor of shape (n_in,)
@@ -155,8 +163,11 @@ class HiddenLayer(object):
             scale_factor = self.dropoutrate
         else:
            scale_factor = 1.0
-                           
-        lin_output = np.dot(input, self.W * scale_factor) + self.b * scale_factor
+           
+        if isTraining is True and early_stopping:
+            lin_output = np.dot(input, self.best_W) + self.best_b        
+        else:
+            lin_output = np.dot(input, self.W * scale_factor) + self.b * scale_factor
         self.output = (
           
             lin_output if self.activation is None
@@ -180,7 +191,7 @@ class HiddenLayer(object):
             delta = delta.dot(self.W.T) * self.activation_deriv(self.input)
             delta = self.dropout_backward(delta)
             
-            # retreved from https://towardsdatascience.com/implementing-batch-normalization-in-python-a044b0369567
+            # retreved from     https://towardsdatascience.com/implementing-batch-normalization-in-python-a044b0369567
             if self.batch_norm:
             
                 self.grad_gamma = np.sum(
