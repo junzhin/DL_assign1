@@ -1,0 +1,10 @@
+subject,times,subelements,learning_rates,val_loss_per_epochs,train_acc_per_epochs,val_acc_per_epochs,train_f1_per_epochs,val_f1_per_epochs
+ActivationFunctions,1.0,None_tanh_tanh_softmax,lr_None_tanh_tanh_softmax,1.6318,0.6104,0.4672,0.6062,0.4613
+ActivationFunctions,1.0,None_relu_relu_softmax,lr_None_relu_relu_softmax,1.4690,0.7016,0.5218,0.7009,0.5205
+ActivationFunctions,1.0,None_relu_relu_softmax,lr_None_relu_relu_softmax,1.4690,0.7016,0.5218,0.7009,0.5205
+ActivationFunctions,2.0,None_tanh_tanh_softmax,lr_None_tanh_tanh_softmax,1.6125,0.6199,0.4701,0.6172,0.4659
+ActivationFunctions,2.0,None_relu_relu_softmax,lr_None_relu_relu_softmax,1.4664,0.6966,0.5249,0.6946,0.5224
+ActivationFunctions,2.0,None_relu_relu_softmax,lr_None_relu_relu_softmax,1.4664,0.6966,0.5249,0.6946,0.5224
+ActivationFunctions,3.0,None_tanh_tanh_softmax,lr_None_tanh_tanh_softmax,1.6105,0.6169,0.4669,0.6139,0.4631
+ActivationFunctions,3.0,None_relu_relu_softmax,lr_None_relu_relu_softmax,1.4921,0.7001,0.5169,0.6983,0.5150
+ActivationFunctions,3.0,None_relu_relu_softmax,lr_None_relu_relu_softmax,1.4921,0.7001,0.5169,0.6983,0.5150
