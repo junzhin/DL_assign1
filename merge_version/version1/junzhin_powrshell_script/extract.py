@@ -17,9 +17,17 @@ import chardet
 # root_folder = "./results"
 
 # hiddenLayers
-subject = "hiddenLayers"
+# subject = "hiddenLayers"
+# times = ["1.0", "2.0", "3.0"]
+# subelements = ["128_256_150_100_10", "128_256_150_100_10", "128_150_10"]
+# root_folder = "./results"
+
+ 
+# ActivationFunctions
+subject = "ActivationFunctions"
 times = ["1.0", "2.0", "3.0"]
-subelements = ["128_256_150_100_10", "128_256_150_100_10", "128_150_10"]
+subelements = ["None_tanh_tanh_softmax",
+               "None_relu_relu_softmax", "None_relu_relu_softmax"]
 root_folder = "./results"
 
 
