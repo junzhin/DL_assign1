@@ -1,10 +1,10 @@
 # This is a PowerShell script, so you need to execute it in PowerShell
 # Command line arguments for train.py
 $vers  = @('1.0','2.0', '3.0')
-$study_subject = "optimizer" # the focus of this experiment 需要更改的参数
+$study_subject = "dropout_prob" # the focus of this experiment 需要更改的参数
 $layer_neurons = @(128, 150, 100, 10)
 $activation_funcs = @('None','relu', 'relu', 'softmax')
-$learning_rates = @(0.5,0.05,0.005, 0.0005) # 需要更改的参数
+$learning_rates =  0.005 # 需要更改的参数
 $epochs = 150
 $dropout_prob = @(1,0.9,0.7,0.5)
 $batch_size = 512
@@ -18,12 +18,12 @@ $optimizer = "sgd_momentum"
 $run = 0
 # 修改成对应要探索的维度的名字
 foreach ($ver in $vers) {
- 
-    foreach ($learning_rate in $learning_rates) {
-        $sub_specifer = $learning_rate  # 需要更改的参数
-        $run++  
+
+    foreach ($drop in $dropout_prob) {
+        $sub_specifer = $drop  # 需要更改的参数
+        $run++
         $save_path = "./results/${study_subject}${ver}/${study_subject}_${sub_specifer}/"
-        
+
         New-Item -ItemType Directory -Path $save_path
         # Run train.py with the above arguments
         Write-Output "$run run is starting!"

@@ -4,7 +4,7 @@ $vers  = @('1.0','2.0', '3.0')
 $study_subject = "optimizer" # the focus of this experiment 需要更改的参数
 $layer_neurons = @(128, 150, 100, 10)
 $activation_funcs = @('None','relu', 'relu', 'softmax')
-$learning_rates = @(0.5,0.05,0.005, 0.0005) # 需要更改的参数
+$learning_rates = 0.005
 $epochs = 150
 $dropout_prob = 1
 $batch_size = 512
@@ -13,14 +13,14 @@ $beta = @(0.9, 0.99)
 $size = 50000
 $batch_norm = "False"
 $loss = "CE"
-$optimizer = @("sgd_momentum",“RMSprop","adam")
+$optimizer = @("sgd_momentum","rmsprop","adam")
 
 $run = 0
 # 修改成对应要探索的维度的名字
 foreach ($ver in $vers) {
  
-    foreach ($learning_rate in $learning_rates) {
-        $sub_specifer = $learning_rate  # 需要更改的参数
+    foreach ($i in 0..($optimizer.Length-1)) {
+        $sub_specifer = $optimizer[$i] # 需要更改的参数
         $run++  
         $save_path = "./results/${study_subject}${ver}/${study_subject}_${sub_specifer}/"
         
