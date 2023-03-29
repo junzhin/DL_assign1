@@ -2,6 +2,8 @@ import numpy as np
 from typing import *
 
 class Activation(object):
+    """Activation class for the activation function of a neuron"""
+ 
     def __tanh(self, x: np.ndarray) -> float:
         return np.tanh(x)
 
@@ -32,14 +34,15 @@ class Activation(object):
     def __softmax(self, a: np.ndarray) -> np.ndarray:
         shift = a - np.max(a, axis=1, keepdims=True)
         return np.exp(shift) / np.sum(np.exp(shift), axis=1, keepdims=True)
-    
-    # 这里不一定用的到， 其中对于softmax 的导数， 一般用的是交叉熵的导数 结合使用
+ 
     def __softmax_deriv(self, a: np.ndarray) -> np.ndarray:
         a = a.reshape((-1,1))
         jac = np.diagflat(a) - np.dot(a, a.T)
         return jac
         
  
+     
+   # Set the activation function of the MLP
     def __init__(self, activation: str='tanh', delta: float = 0.01):
         self.indicator = False
         if activation == 'logistic':
@@ -63,6 +66,10 @@ class Activation(object):
             
                  
 class HiddenLayer(object):
+    """A hidden layer in a multilayer perceptron.
+    """
+
+ 
     def __init__(self, n_in: int, n_out: int,
                  activation_last_layer='tanh', activation='tanh', W=None, b=None, output_layer = False, dropout = 1.0, weight_decay = None, batch_norm = False):
         """
@@ -130,16 +137,29 @@ class HiddenLayer(object):
         
     
     def early_stopping_update(self):
+        """Update the early stopping counter and check if the training should be stopped.
+
+        Returns
+ 
+        """
         self.best_W = self.W
         self.best_b = self.b
 
 
     
     def forward(self, input: np.ndarray, isTraining: bool = True,dropout_predict = False, early_stopping = False) -> np.ndarray:
-        '''
-        :type input: numpy.array
-        :param input: a symbolic tensor of shape (n_in,)
-        '''
+        """Feedforward function for the neural network.
+    
+        Args:
+            input (np.ndarray): input to the neural network.
+            isTraining (bool): whether or not the network is in training mode.
+            dropout_predict (bool): whether or not to use dropout during prediction.
+            early_stopping (bool): whether or not to use early stopping.
+    
+        Returns:
+            np.ndarray: output of the neural network.
+        """
+ 
         # https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwimv42a_tv9AhUsmlYBHSO9BYQQFnoECAwQAQ&url=https%3A%2F%2Fgithub.com%2Frenan-cunha%2FBatchNormalization&usg=AOvVaw28oNAzfY7iGhQg3qVBktzV
         # https://github.com/renan-cunha/BatchNormalization
         
@@ -185,6 +205,10 @@ class HiddenLayer(object):
     
     
     def backward(self, delta: np.ndarray) -> None:
+        """
+        Backpropagation through this layer
+        """
+ 
         self.grad_W = np.atleast_2d(self.input).T.dot(
             np.atleast_2d(delta))
         self.grad_b = np.average(delta, axis=0) 
@@ -206,6 +230,15 @@ class HiddenLayer(object):
         return delta
     
     def dropout_forward(self, input: np.ndarray) -> np.ndarray:
+        """Performs the forward pass of dropout.
+        
+        Args:
+            input: The input data to the layer
+        Returns:
+            The output of the layer
+        """
+
+ 
         self.mask = np.random.binomial(1, self.dropoutrate, size=input.shape) 
         # self.mask = np.random.choice([0, 1], size=input.shape, p=[1-self.dropoutrate, self.dropoutrate])
         input = input * self.mask
@@ -215,8 +248,34 @@ class HiddenLayer(object):
         return input
     
     def dropout_backward(self, delta: np.ndarray) -> np.ndarray:
+        """ Dropout backward pass.
+    
+        Computes the gradient on the output of a dropout layer.
+    
+        Args:
+            delta: Gradient of loss with respect to the output of the dropout layer.
+    
+        Returns:
+            Gradient of loss with respect to the input of the dropout layer.
+        """
+ 
         assert self.mask.shape == delta.shape
         return delta * self.mask 
     
     def obtain_mask(self):
+        """Obtain a mask for the current image.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        mask : array_like
+            The mask for the current image. A mask is a boolean array
+            that is the same size as the image, with True values for
+            pixels that should be included in the analysis and False
+            values for pixels that should be excluded.
+        """
+
         return self.mask
