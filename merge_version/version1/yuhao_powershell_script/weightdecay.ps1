@@ -4,7 +4,7 @@ $vers  = @('1.0','2.0', '3.0')
 $study_subject = "weight_decay" # the focus of this experiment 需要更改的参数
 $layer_neurons = @(128, 150, 100, 10)
 $activation_funcs = @('None','relu', 'relu', 'softmax')
-$learning_rates = 0.005 # 需要更改的参数
+$learning_rate = 0.005 # 需要更改的参数
 $epochs = 150
 $dropout_prob = 1
 $batch_size = 512
@@ -30,7 +30,7 @@ foreach ($ver in $vers) {
         Write-Output "$save_path"
         python ../train.py --layer_neurons $layer_neurons --activation_funcs $activation_funcs `
         --learning_rate $learning_rate --epochs $epochs --dropout_prob $dropout_prob --batch_size $batch_size `
-        --weight_decay $weight_decay --beta $beta --size $size --batch_norm $batch_norm --file_location "../../../raw_data/" --loss $loss --optimizer $optimizer --save_path $save_path > "${save_path}log.txt"
+        --weight_decay $sub_specifer --beta $beta --size $size --batch_norm $batch_norm --file_location "../../../raw_data/" --loss $loss --optimizer $optimizer --save_path $save_path > "${save_path}log.txt"
         Write-Output "$run run is finished!"
     }
 }

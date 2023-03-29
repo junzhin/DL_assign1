@@ -37,7 +37,7 @@ default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'adam'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
 default_save_path = './results/debug/'
 default_file_location= "../../raw_data/"
-default_early_stopping = True
+default_early_stopping = False
 
 # ----------------------------------------------------------------------------------
 # Parse arguments
