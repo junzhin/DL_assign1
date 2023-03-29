@@ -8,14 +8,8 @@ from tqdm import tqdm
 class MLP:
     # for initiallization, the code will create all layers automatically based on the provided parameters.     
     def __init__(self, X_test: np.ndarray, y_test: np.ndarray, layers: List[int], activation: List[Optional[str]], weight_decay: float = 0.01, loss: str = "MSE", batch_size: int = 1, dropoutRate: float = 0.5, beta: List[float] = [0.9,0.999], batch_norm: bool = False):
-        """
-        :param layers: A list containing the number of units in each layer.
-        Should be at least two values
-        :param activation: The activation function to be used. Can be
-        "logistic" or "tanh"
-        """        
-        ### initialize layers
          
+        # initialize layers
         self.layers: List[HiddenLayer]=[]
         self.params=[]
         self.masks=[]
@@ -39,12 +33,20 @@ class MLP:
         for i in range(len(layers)-1):      
             if i > 0 :
                 first_layer = False
-            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = first_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm if i != 0 else False)) # the last layer is the output layer, so we set its output_layer to be True, the first layer is the input layer, so we set its batch_norm to be False
+            self.layers.append(HiddenLayer(layers[i],layers[i+1],activation[i],activation[i+1], output_layer = first_layer,dropout=self.dropoutRate, weight_decay=self.weight_decay, batch_norm=self.batch_norm if i != 0 else False))  
 
-    # define the objection/loss function, we use mean sqaure error (MSE) as the loss
-    # you can try other loss, such as cross entropy.
-    # when you try to change the loss, you should also consider the backward formula for the new loss as well!
+ 
     def criterion(self, y: np.ndarray, y_hat: np.ndarray, isTraining: bool = True):
+        """Compute the loss of the network's prediction with respect to the ground truth.
+
+        Args:
+            y (np.ndarray): The ground truth.
+            y_hat (np.ndarray): The network's prediction.
+            isTraining (bool, optional): Whether the network is in training mode. Defaults to True.
+
+        Returns:
+            float: The loss value.
+        """
         if self.loss == "MSE":
             return self.criterion_MSE(y,y_hat, isTraining)
         elif self.loss == "CE":
@@ -53,22 +55,43 @@ class MLP:
         
            
     def criterion_MSE(self, y: np.ndarray, y_hat: np.ndarray, isTraining: bool = True):
-            activation_deriv=Activation(self.activation[-1]).f_deriv
-            # MSE
-            y = Data_Proprocesing.one_encoding(y)
-            
-            error = y - y_hat
-            loss = error**2
-            
-            if isTraining is False:
-                
-                return np.sum(loss)/y.shape[0], None
-            
-            delta = -error * activation_deriv(y_hat) / y.shape[0]
-            return np.sum(loss)/y.shape[0], delta
+        """Computes the Mean Squared Error between the true and predicted values of the data.
+    
+        Args:
+            y: The true values of the data.
+            y_hat: The predicted values of the data.
+            isTraining: Whether this is being used for training or testing.
+    
+        Returns:
+            The Mean Squared Error between the true and predicted values of the data.
+        """
+
+ 
+        activation_deriv=Activation(self.activation[-1]).f_deriv
+        # MSE
+        y = Data_Proprocesing.one_encoding(y)
         
+        error = y - y_hat
+        loss = error**2
+        
+        if isTraining is False:
+            
+            return np.sum(loss)/y.shape[0], None
+        
+        delta = -error * activation_deriv(y_hat) / y.shape[0]
+        return np.sum(loss)/y.shape[0], delta
+    
     
     def criterion_CE(self, y:  np.ndarray, y_hat:  np.ndarray, isTraining: bool = True):
+        """Computes the cross-entropy loss between the true labels, y, and the predictions, y_hat.
+        Args:
+            y: The true labels, of shape (batch_size, num_classes).
+            y_hat: The model predictions, of shape (batch_size, num_classes).
+            isTraining: A boolean indicating whether this is a training step or not. This is used to determine whether to update the running mean and standard deviation.
+        Returns:
+            The loss, as a scalar.
+        """
+        
         y = Data_Proprocesing.one_encoding(y)
         # print("y: ",y.shape)
         # print("y_hat", y_hat.shape)
@@ -85,12 +108,15 @@ class MLP:
             return loss, None
         
         # see https://levelup.gitconnected.com/killer-combo-softmax-and-cross-entropy-5907442f60ba#:~:text=Putting%20It%20All%20Together
-        # 整合在一起得到closed form
+        
         delta = -(y - y_hat) / number_of_sample
         return loss, delta
 
     # forward progress: pass the information through the layers and out the results of final output layer
     def forward(self, input:  np.ndarray, isTraining: bool = True, dropout_predict: bool = False, early_stop: bool = False):
+        # This is the forward propagation function that is used to predict the output
+        # for a given input. It is called when the predict() function is called.
+ 
         # reset self.masks to empty list            
         for layer in self.layers:
             output=layer.forward(input, isTraining=isTraining, dropout_predict=dropout_predict, early_stopping=early_stop)
@@ -99,6 +125,10 @@ class MLP:
 
     # backward progress  
     def backward(self, delta: np.ndarray):
+        # Computes the backward pass of the ReLU activation function
+        # delta is the gradient of the loss with respect to the output of the activation function
+        # Returns the gradient of the loss with respect to the input of the activation function
+ 
         for layerIndex in reversed(range(len(self.layers))):
             # print("layer: ", layerIndex)
             delta = self.layers[layerIndex].backward(delta)
@@ -108,6 +138,10 @@ class MLP:
     # update the network weights after backward.
     # make sure you run the backward function before the update function! 
     def optimizer_init(self, method: str) -> None:
+        """
+        Initialize the optimizer with the given method.
+        """
+ 
         
         if method == "sgd":
             self.opt = sgd()
@@ -202,6 +236,7 @@ class MLP:
                 
                 
                 self.step_count += 1
+                
             # keep track of experiment results
             y_train_pred = self.predict(X)
             train_loss, _ = self.criterion(
@@ -218,6 +253,7 @@ class MLP:
                 self.y_test, np.expand_dims(np.argmax(y_test_pred, axis=1), axis=1)))
             val_f1_per_epochs.append(f1_score(self.y_test,  np.expand_dims(np.argmax(y_test_pred, axis=1),axis=1), average='macro')) 
             
+            # early stopping implementation
             if self.early_stop_mode:
                 if val_loss < best_metric_score:
                     best_metric_score = val_loss
@@ -257,15 +293,24 @@ class MLP:
         
         return  statistic
 
-    # define the prediction function
-    # we can use predict function to predict the results of new data, by using the well-trained network.
+    
     def early_stop_save(self):
+        """Save the model if the validation loss has decreased"""
+
         for layerIndex in reversed(range(len(self.layers))):
             self.layers[layerIndex].early_stopping_update()
        
        
     def predict_early_stop(self, x: np.ndarray):
+        """
+        Predicts the output of the model given a set of input data points.
+        If the model has not implemented early stopping in a fit method, this function will raise an
+        exception.
         
+        :param x: the input data points
+        :return: the output of the model
+        """
+    
         assert self.early_stop_mode == True, "early_stop_mode is not activated"
         x = np.array(x)
         output = []
@@ -275,6 +320,11 @@ class MLP:
         
             
     def predict(self, x: np.ndarray) -> np.ndarray:
+        """
+        Given a set of input features, predicts the output values for each
+        input feature. This function is called in the predict function in
+        the Model class.
+        """ 
         x = np.array(x)
         output = []
         for i in np.arange(x.shape[0]):

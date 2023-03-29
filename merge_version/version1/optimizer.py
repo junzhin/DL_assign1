@@ -1,5 +1,6 @@
 import numpy as np
 
+# This is a base class for all optimizers. All optimizers should inherit from this.
 class base_optimizer():
     def __init__(self):
         pass
@@ -14,6 +15,8 @@ class base_optimizer():
         pass
     
     
+# This is a class for the stochastic gradient descent optimizer. It inherits the base_optimizer class. 
+# The update_parameter function does a simple weight update using the SGD algorithm. 
 class sgd(base_optimizer):
     def __init__(self):
         base_optimizer.__init__(self)
@@ -36,7 +39,11 @@ class sgd_momentum(base_optimizer):
         b = b - layer.v_b
         
         return w, b
-         
+
+
+ 
+# This is a class for adam optimizer. It inherits the base_optimizer class. 
+# The update_parameter function does a simple weight update using the adam algorithm.        
 class adam(base_optimizer):
     def __init__(self, beta1, beta2):
         base_optimizer.__init__(self)
@@ -83,7 +90,9 @@ class adam(base_optimizer):
         b = b - lr * m_db_corrected / (np.sqrt(v_db_corrected) + self.epsilon)
 
         return w, b
-
+    
+# This is a class for RMSprop optimizer. It inherits the base_optimizer class. 
+# The update_parameter function does a simple weight update using the RMSprop algorithm.
 class RMSprop(base_optimizer):
     def __init__(self,  beta2):
         base_optimizer.__init__(self)
