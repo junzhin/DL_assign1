@@ -41,13 +41,19 @@ import chardet
 # Dropout
 # subject = "dropout_prob"
 # times = ["1.0", "2.0", "3.0"]
-# subelements = ["0.5","0.7","0.9","1"]
+# subelements = ["1","0.9","0.7","0.5"]
 # root_folder = "./results"
 
-# Weight decay
+# weight decay
+# subject = "weight_decay"
+# times = ["1.0", "2.0", "3.0"]
+# subelements = ["0","0.02","0.04","0.06"]
+# root_folder = "./results"
+
+# batch norm
 subject = "batch_norm"
 times = ["1.0", "2.0", "3.0"]
-subelements = ["False", "True"]
+subelements = ["True", "False"]
 root_folder = "./results"
 
 
