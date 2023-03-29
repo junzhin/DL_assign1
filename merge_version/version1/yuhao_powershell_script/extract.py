@@ -33,9 +33,21 @@ import chardet
 
 
 # optimiser
-subject = "optimizer"
+# subject = "optimizer"
+# times = ["1.0", "2.0", "3.0"]
+# subelements = ["sgd_momentum", "rmsprop", "adam"]
+# root_folder = "./results"
+
+# Dropout
+# subject = "dropout_prob"
+# times = ["1.0", "2.0", "3.0"]
+# subelements = ["0.5","0.7","0.9","1"]
+# root_folder = "./results"
+
+# Weight decay
+subject = "batch_norm"
 times = ["1.0", "2.0", "3.0"]
-subelements = ["sgd_momentum", "rmsprop", "adam"]
+subelements = ["False", "True"]
 root_folder = "./results"
 
 
