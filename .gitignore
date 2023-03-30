@@ -3,3 +3,5 @@ other resources/合集_dl_assign1.zip
 *.pyc
 
 **/results/
+/merge_version/version1/.ipynb_checkpoints
+/merge_version/version1/__pycache__
