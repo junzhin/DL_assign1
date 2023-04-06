@@ -21,20 +21,21 @@ debug = False
 #Set default hyperparameters
 default_layer_neurons = [128, 150, 100, 10]  # specify the number of layers and neurons in each layer
 default_layer_activation_funcs = ['None', 'relu', 'relu', 'softmax']  # optins: None, linear,leakyrelu,relu,softmax,logistic
-default_learning_rate = 0.0005 # learning rate for the optimizer
-default_epochs = 10# number of training epochs
-default_dropout_prob = 1 # dropout probability that perserve the neuron
+default_learning_rate = 0.005 # learning rate for the optimizer
+default_epochs = 150 # number of training epochs
+default_dropout_prob = 0.9  # dropout probability that perserve the neuron
 assert 0 <= default_dropout_prob <= 1 # dropout probability must be between 0 and 1
-default_batch_size = 512 # if batch_size is None, then no batch is used
-default_weight_decay = 0 # if weight_decay is None, then no weight decay is applied
+default_batch_size = 1024 # if batch_size is None, then no batch is used
+default_weight_decay = 0.002 # if weight_decay is None, then no weight decay is applied
 default_beta = [0.9, 0.999] # beta values for the adam optimizer
-default_size = 10000 # Size of training dataset, 50000 is the full dataset
+default_size = 50000 # Size of training dataset, 50000 is the full dataset
 default_batchnorm = False # True or False for batch normalization
 default_loss = 'CE' # 'CE' or 'MSE'
 default_optimizer = 'adam'  # 'sgd' or 'adam', 'sgd_momentum' 'rmsprop'
-default_save_path = './results/debug/' # path to save the results
+# path to save the results
+default_save_path = './results/Basic_Model_bn_weight_decay_adam_early_stoppingv3'
 default_file_location= "../../raw_data/" # path to the raw data
-default_early_stopping = False # True or False for early stopping
+default_early_stopping = True # True or False for early stopping
 
 # ----------------------------------------------------------------------------------
 # Parse arguments
@@ -66,7 +67,7 @@ parser.add_argument('--loss', type=str, default=default_loss,
                     help='Loss function for the optimizer (CE or MSE)')
 parser.add_argument('--optimizer', type=str, default=default_optimizer,
                     help='Optimizer to use (sgd, adam, or sgd_momentum)')
-parser.add_argument('--save_path', type=str, default='./results/debug/')
+parser.add_argument('--save_path', type=str, default=default_save_path)
 parser.add_argument('--file_location', type=str, default=default_file_location)
 parser.add_argument('--early_stopping', type=bool, default=default_early_stopping)
 
