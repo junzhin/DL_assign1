@@ -5,6 +5,7 @@
 This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023, Assignment 1
 
 ## Abstract of the project
+
 Neural networks, as the foundation of the deep learning methodology, has been gained wide attention over
 the years, leading to the desired demand to understand the philosophy and idea behind the Neural Network.
 This report will mainly analyze and evaluate each of the self-implemented multilayer perceptron modules
@@ -16,6 +17,7 @@ experiment results, limitations of our work, and meaningful conclusions and refl
 ---
 
 ## Purpose of the study
+
 In this project, we have developed several modules in the neural network from scratch using numpy library, instead of the
 API function from PyTorch. The purpose of this study is to understand the fundamental structure and reasoning behind the
 neural network and perform a computational study to compare and test the performance when changing various experimental
