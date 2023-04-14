@@ -33,27 +33,10 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 - **For complete list of references, please refer to the report** 
 
 ---
-
-# Structures of Github Repository:
-
-```shell
-├── ......
-├── source_files:
-├—— ......
-```
-
-## Brief Descrptions of the folders:
-
-- `source_files `: Containing the raw data 
-
+ 
 
 - ---
-
-# Dependencies:
-
-
-**See requirements.txt file** 
-- ---
+ 
 
 # Instructions to run the code (How to Run the Code):
 
