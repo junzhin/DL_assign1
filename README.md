@@ -23,27 +23,27 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 
 # Experiment results
 
-![](./scr/2023-04-14-18-11-40-image.png)
+![](./src/2023-04-14-18-11-40-image.png)
 
-![](./scr/2023-04-14-18-12-06-image.png)
+![](./src/2023-04-14-18-12-06-image.png)
 
-![](./scr/2023-04-14-18-12-14-image.png)
+![](./src/2023-04-14-18-12-14-image.png)
 
-![](./scr/2023-04-14-18-12-21-image.png)
+![](./src/2023-04-14-18-12-21-image.png)
 
-![](./scr/2023-04-14-18-12-28-image.png)
+![](./src/2023-04-14-18-12-28-image.png)
 
-![](./scr/2023-04-14-18-12-43-image.png)
+![](./src/2023-04-14-18-12-43-image.png)
 
-![](./scr/2023-04-14-18-12-50-image.png)
+![](./src/2023-04-14-18-12-50-image.png)
 
-![](./scr/2023-04-14-18-13-05-image.png)
+![](./src/2023-04-14-18-13-05-image.png)
 
-![](./scr/2023-04-14-18-13-12-image.png)
+![](./src/2023-04-14-18-13-12-image.png)
 
-![](./scr/2023-04-14-18-13-19-image.png)
+![](./src/2023-04-14-18-13-19-image.png)
 
-![](./scr/2023-04-14-18-14-54-image.png)
+![](./src/2023-04-14-18-14-54-image.png)
 
 
 
