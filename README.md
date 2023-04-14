@@ -65,5 +65,7 @@ To replicate the experiments' results:
 
 - To run the notebook, make sure that you run the code block sequentially, this is a crucial step you have to follow!
 - To run the codes, navigate through the path "python ./merge_version/version1.0/train.py". If you want to replicate the experiment results, please navigate into the foders of "xxxx_powrshell_script" and run the related .ps1 files in terminal in **window system**. 
+
+
 **Note that you might be asked to log in to a google account to gain permission to download the data files. If so, please do not hesitate to do so. Otherwise, the notebook can not be executed successfully.**
 
