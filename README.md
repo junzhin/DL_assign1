@@ -71,7 +71,7 @@ of modules to provide further guidance when training similar models in the futur
 
 # Relevant Resources:
 
-- **Overleaf Report Editing Link:** [https://www.overleaf.com/6912928632bvcjvsqvqwsw](https://www.overleaf.com/read/tyjdbbdspgnf)
+- **Overleaf Report viewing Link:** [https://www.overleaf.com/6912928632bvcjvsqvqwsw](https://www.overleaf.com/read/tyjdbbdspgnf)
 - **For complete list of references, please refer to the report** 
 
 ---
