@@ -58,11 +58,12 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 # Instructions to run the code (How to Run the Code):
 
 To replicate the experiments' results:
+- The implementation of MLP used for Deep learning assignment 1 at the University of Sydney adopted the base code provided in the DL tutorial. We extend the implementation to meet the criteria specified by the assessment.
 
-1.  
+- We present a runnable Jupyter notebook in the above link for submission and demonstration purposes. We used the python files to run the experiment on the local machine, the results are provided in the report.
 
-2.  
 
-3. 
+- To run the notebook, make sure that you run the code block sequentially, this is a crucial step you have to follow!
 
-!!! **Note that**: 
+**Note that you might be asked to log in to a google account to gain permission to download the data files. If so, please do not hesitate to do so. Otherwise, the notebook can not be executed successfully.**
+
