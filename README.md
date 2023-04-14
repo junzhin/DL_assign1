@@ -23,25 +23,29 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 
 # Experiment results
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-11-40-image.png)
+![](./2023-04-14-18-11-40-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-12-06-image.png)
+![](./2023-04-14-18-12-06-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-12-14-image.png)
+![](./2023-04-14-18-12-14-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-12-21-image.png)
+![](./2023-04-14-18-12-21-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-12-28-image.png)
+![](./2023-04-14-18-12-28-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-12-43-image.png)
+![](./2023-04-14-18-12-43-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-12-50-image.png)
+![](./2023-04-14-18-12-50-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-13-05-image.png)
+![](./2023-04-14-18-13-05-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-13-12-image.png)
+![](./2023-04-14-18-13-12-image.png)
 
-![](C:\Users\ningj\AppData\Roaming\marktext\images\2023-04-14-18-13-19-image.png)
+![](./2023-04-14-18-13-19-image.png)
+
+![](./2023-04-14-18-14-54-image.png)
+
+
 
 ---
 
