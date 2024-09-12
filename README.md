@@ -6,6 +6,7 @@ This repository is created for  COMP4329 COMP5329 Deep Learning  Semester 1 2023
 
 ## Abstract of the project
 
+
 Neural networks, as the foundation of the deep learning methodology, has been gained wide attention over
 the years, leading to the desired demand to understand the philosophy and idea behind the Neural Network.
 This report will mainly analyze and evaluate each of the self-implemented multilayer perceptron modules
@@ -14,7 +15,6 @@ computational study. Experiments related to each module will be conducted for re
 sification task on 10000 test data samples training in 50000 training data for examining the effectiveness
 when changing different hyperparameters while maintaining other modules constantly. Discussion related to
 experiment results, limitations of our work, and meaningful conclusions and reflection will also be provided
----
 
 ## Purpose of the study
 
@@ -26,7 +26,8 @@ such as the ReLU function, and optimizers such as Stochastic gradient descent wi
 including batch normalization, dropout, and mini-batch training procedure. Using test accuracy, execution time, and validation
 loss as evaluation metrics, we would like to compare the effect of multilayer perceptron when deploying different combinations
 of modules to provide further guidance when training similar models in the future
----
+ 
+
 
 # Group members and Organisation about the course:
 
